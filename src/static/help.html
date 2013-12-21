@@ -1,0 +1,338 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Web API for NER [beta]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    
+   
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        padding-bottom: 40px;
+      }
+.results{
+	max-height: 500px;
+	overflow: auto;
+	cursor: pointer;
+}
+      
+
+pre {
+    height: auto;
+    max-height: 800px;
+    overflow: auto;
+    background-color: #eeeeee;
+    word-break: keep-all !important;
+    word-wrap: normal !important;
+    white-space: pre-wrap !important;
+}
+
+
+
+.p,.l,.w,.c,.e,.f,.d,.m,.g,.n,.s,.t{
+	cursor: text;
+}
+
+.sel{
+	background-color: #333000;
+	color: white;
+}
+
+.undf, .p, .a{color:#00CC00;}
+.l{color:#667cff;}
+.w{color:#ff9e00;}
+.c{color:#ff5ce1;}
+.e{color:#b0bfd2;}
+.f{color:#9666ff;}
+.d{color:#ffd792;}
+.m{color:#bf0000;}
+.g{color:#9e90a3;}
+.n{color:#669900;}
+.s{color:#c5e26d;}
+.t{color:#ffd070;}
+
+textarea{
+	min-height: 100%;
+    height: auto !important;
+    width: 95%;
+    height: 100%;
+}
+
+.peopleCarouselImg img {
+  width: auto;
+  margin: 0 auto;
+  height:400px;
+}
+    </style>
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">Web API for NER [beta]</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li><a href="index2.html">Parser</a></li>
+              <li class="active"><a href="#about">Help</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+	
+
+    <div class="container-fluid">
+    	<div class="page-header">
+  			<h1>NER REST API dokumentace</h1>
+		</div>
+		Aktuální systém umožnujě provádět operace vůči 3 cílovým API:
+		<ul>
+  			<li><b>/api/kb/</b> - pro ovládání KB manageru </li> 
+  			<li><b>/api/ner/</b> - pro parsování pomocí NERu</li> 
+  			<li><b>/api/figa/</b> - pro parsování pomocí FIGA</li> 
+		</ul>
+
+		<div class="page-header">
+  			<h3>Ovládání KB</h3>
+		</div>		
+		<p>
+			
+			Typ dotazu specifikuje operaci:
+		</p>
+		<ul>
+			<li><b>GET</b> - Vraci informace o KB
+			<p>
+				REST API: <b>/api/kb/[loaded]</b><br/>
+				Pokud je <b>loaded</b> uvedeno, vraci se pole názvů všech načtených KB. Pokud ne, vraci se celkovy status o všech bázích. Příklad komplexní odpovědi:
+				<pre>
+[
+   {"status": 0, "load_time": 18.626977395538827, "processor": "figa", "name": "DUMP_FLTRD.ascii", "size": 2655761.3261718475}, 
+   {"status": 0, "load_time": 23.339564077854156, "processor": "figa", "name": "DUMP_FLTRD.ascii_basic", "size": 793979.0}, 
+   {"status": 0, "load_time": 13.586315964390353, "processor": "ner", "name": "KB_all", "size": 1622271.4547424656}, 
+   {"status": 4, "load_time": 128.04801733909287, "processor": "ner", "name": "KBstatsMetrics", "size": 7141068.613685616}
+]
+				</pre>
+				kde:
+				<dl>
+  					<dt>status</dt>
+  					<dd>Udává aktuální stav KB - 0:offline, 1:ve frontě pro load, 2: načítá se 3: odstraňuje se 4: online</dd>
+  					<dt>load_time</dt>
+  					<dd>Odhadovaný čas načítání KB v sekundách. Jedná se o průměr z předhozích načítání</dd>
+  					<dt>processor</dt>
+  					<dd>Pro jaký procesor je KB určena</dd>
+  					<dt>name</dt>
+  					<dd>Unikátní jméno KB</dd>  					  					
+  					<dt>size</dt>
+  					<dd>Odhadovaná velikost KB po načtení v RAM</dd> 
+				</dl>
+
+			</p>
+			</li> 
+  			<li><b>PUT</b> - Zařadí KB s názvem KB_NAME do fronty pro načtení do paměti
+				<p>REST API: <b>/api/kb/[KB_NAME]</b><br/></p>
+  			</li> 
+  			<li><b>DELETE</b> - Označí KB s názvem KB_NAME pro smazaní z paměti
+  				<p>REST API: <b>/api/kb/[KB_NAME]</b><br/></p>
+  			</li> 
+		</ul>
+
+
+		<div class="page-header">
+  			<h3>NER parser</h3>
+		</div>		
+
+		<p>
+			
+			Typ dotazu specifikuje operaci:
+		</p>
+		<ul>
+			<li><b>GET</b> - Vraci informace o dostupných KB pro NER a jejich stavu
+			<p>
+				REST API: <b>/api/ner/</b><br/>
+				Příklad odpovědi:
+				<pre>
+					[{"status": 0, "name": "KB_all"}, {"status": 1, "name": "KBstatsMetrics"}]
+				</pre>
+				kde:
+				<dl>
+  					<dt>status</dt>
+  					<dd>Udává aktuální stav KB dostupných pro NER- 0:offline, 1:online</dd>
+  					<dt>name</dt>
+  					<dd>Unikátní jméno KB</dd>  					  					
+				</dl>
+
+			</p>
+			</li> 
+  			<li><b>POST</b> - Provede zpracování vstupního textu INPUTEXT pomocí NERu a použije KB s názvem KB_NAME
+				<p>REST API: <b>/api/ner/[KB_NAME]/?text=INPUTEXT</b><br/></p>
+				<pre>
+"header": {
+    "status": 0,
+    "msg": "",
+    "processor": "",
+    "groups": {
+      "a": "Artist",
+      "c": "Museums",
+      	....
+    }
+},
+"result": [
+	{
+	  "kb_data": {
+	    "id": "l:d817739d59",
+	    "type": "location",
+	    "name": "Grez-sur-Loing",
+	    "alternative names": [
+	      "Grez-sur-Loing",
+	      "Grez-sur-Loing, France"
+	    ],
+	    "latitude": "48.31528",
+	    "longitude": "2.68889",
+	    "feature code": "ADM4",
+	    "country": "France",
+	    "population": "1399",
+	    "elevation": "",
+	    "wikipedia url": "http://en.wikipedia.org/wiki/Grez-sur-Loing",
+	    "dbpedia url": "",
+	    "freebase url": "http://www.freebase.com/m/0598nl",
+	    "settlement type": "",
+	    "timezone": "",
+	    "description": "Grez-sur-Loing is a commune in the Seine-et-Marne department in north-central France.",
+	    "image": [
+	      "04pp03h.jpg"
+	    ]
+	  },
+	  "items": [
+	    [
+	      5950,
+	      5964,
+	      "Grez-sur-Loing",
+	      "l-d817739d59"
+	    ]
+	  ]
+	},.......
+]
+
+				</pre>
+  			</li> 
+		</ul>
+		
+
+		<div class="page-header">
+  			<h3>FIGA parser</h3>
+
+		</div>	
+			Typ dotazu specifikuje operaci:
+		</p>
+		<ul>
+			<li><b>GET</b> - Vraci informace o dostupných KB pro NER a jejich stavu
+			<p>
+				REST API: <b>/api/ner/</b><br/>
+				Příklad odpovědi:
+				<pre>
+					[{"status": 0, "name": "DUMP_FLTRD.ascii"}, {"status": 0, "name": "DUMP_FLTRD.ascii_basic"}]
+				</pre>
+				kde:
+				<dl>
+  					<dt>status</dt>
+  					<dd>Udává aktuální stav KB dostupných pro FIGA - 0:offline, 1:online</dd>
+  					<dt>name</dt>
+  					<dd>Unikátní jméno KB</dd>  					  					
+				</dl>
+
+			</p>
+			</li> 
+  			<li><b>POST</b> - Provede zpracování vstupního textu INPUTEXT pomocí FIGA a použije KB a FSA s názvem FIGA_NAME
+				<p>REST API: <b>/api/figa/[FIGA_NAME]/?text=INPUTEXT</b><br/></p>
+				<pre>
+ "header": {
+    "status": 0,
+    "msg": "",
+    "processor": "",
+    "groups": {
+      "a": "Artist",
+
+    }
+},
+"result": [
+	{
+	  "kb_data": {
+	    "id": "l:d817739d59",
+	    "type": "location",
+	    "name": "Grez-sur-Loing",
+	    "alternative names": [
+	      "Grez-sur-Loing",
+	      "Grez-sur-Loing, France"
+	    ],
+	    "latitude": "48.31528",
+	    "longitude": "2.68889",
+	    "feature code": "ADM4",
+	    "country": "France",
+	    "population": "1399",
+	    "elevation": "",
+	    "wikipedia url": "http://en.wikipedia.org/wiki/Grez-sur-Loing",
+	    "dbpedia url": "",
+	    "freebase url": "http://www.freebase.com/m/0598nl",
+	    "settlement type": "",
+	    "timezone": "",
+	    "description": "Grez-sur-Loing is a commune in the Seine-et-Marne department in north-central France.",
+	    "image": [
+	      "04pp03h.jpg"
+	    ]
+	  },
+	  "items": [
+	    [
+	      5950,
+	      5964,
+	      "Grez-sur-Loing",
+	      "l-d817739d59"
+	    ]
+	  ]
+	},.......
+]
+
+				</pre>
+  			</li> 
+		</ul>
+	
+   <hr>   
+	<footer>
+        <p>&copy; KNOT Group 2013</p>
+      </footer>
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    
+  
+  </body>
+</html>
+
+  
+
+

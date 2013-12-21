@@ -1,0 +1,15 @@
+src/api/NER/
+src/api/NER_/
+src/api/automats/
+
+*.pyc
+*.log
+*.fsa
+*.kb
+
+.*
+!.gitignore
+
+
+
+
