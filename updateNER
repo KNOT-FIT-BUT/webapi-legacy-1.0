@@ -1,0 +1,57 @@
+#!/bin/bash
+SCRIPT_PATH="/home/casey/workspace/webapiner2"
+
+
+cd $SCRIPT_PATH
+./webapiner stop
+
+cd sec
+printf "%-50s" "Updating repository..."
+git pull
+
+if [ $? -ne 0 ]; then
+ printf "%s\n" "Failed!"
+ exit 1
+
+ #printf "%s\n" "done." 
+fi
+
+
+printf "%-50s" "Removing old NER backup..."
+
+if [ ! -d $SCRIPT_PATH"/src/api/NER_OLD" ]; then
+  printf "%s\n" "Skipped!"
+else
+ #echo -ne "Deleting NER backup..."
+ rm -r $SCRIPT_PATH/src/api/NER_OLD 
+ printf "%s\n" "Done!"
+fi
+
+
+printf "%-50s"  "Creating new backup..."
+if [ -d $SCRIPT_PATH"/src/api/NER" ]; then
+ mv $SCRIPT_PATH/src/api/NER $SCRIPT_PATH/src/api/NER_OLD
+ printf "%s\n" "Done!"
+else
+ printf "%s\n" "Skipped!"
+fi
+
+printf "%-50s" "Copying new NER to api folder..."
+ cp -r $SCRIPT_PATH/sec/NER $SCRIPT_PATH/src/api/NER
+printf "%s\n" "Done!"
+
+cd $SCRIPT_PATH
+
+if [ -d $SCRIPT_PATH"/src/api/NER/figav08" ]; then
+  printf "%-50s"  "Patching..."
+  cp $SCRIPT_PATH/patch/kb_loader.so  $SCRIPT_PATH/src/api/NER/figav08/figa
+  printf "%s\n" "Done!"
+  #./webapiner start
+else
+  printf "%-50s"  "Cant find figav08 folder - possible update of figa tool. Need manual update of webapiner."
+fi
+
+
+
+
+#&& rm -r ../src/api/NER &&  mv ../src/api/NER ../src/api/NER_OLD && cp -r ./NER ../src/api/NER 

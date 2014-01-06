@@ -46,7 +46,8 @@ KBManager.prototype.init = function(){
 		),
 		this.pbarblock,
 		$(document.createElement("div")).addClass("text-right").append(
-				this.refresh_icon.click($.proxy(this.refresh, this))
+			    "Reload from disk: ",
+				this.refresh_icon.click($.proxy(this.reload, this))
 		)
 		
 		);
@@ -97,6 +98,17 @@ KBManager.prototype.refresh = function(){
   			success: $.proxy(this.success,this)
 		});
 		
+};
+
+KBManager.prototype.reload = function(){
+	this.refresh_icon.attr("class","icon-time");
+	$.ajax({  
+  			type: "GET",  
+  			url: this.api_url+"reload/",  
+  			data: "",
+  			dataType: 'json',
+  			success: $.proxy(this.success,this)
+		});
 };
 	
 KBManager.prototype.success = function(data){

@@ -26,7 +26,7 @@ class KBFactory():
         kb = KBFactory.factories[factory](self.base_folder, self.kb_folder, kb_name)
         kb.kb_conf = conf["conf"]
         kb.kb_columns = conf["columns"]
-        print type(conf["conf"]["value_splitter"])
+        #print type(conf["conf"]["value_splitter"])
         return kb
     
     

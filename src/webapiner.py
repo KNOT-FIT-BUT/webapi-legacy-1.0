@@ -12,15 +12,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def main():
     #cherrypy.config.update({'error_page.404': error_page_404})
-    cherrypy.config.update({'server.socket_host': "127.0.0.1",
-                            'server.socket_port': 8090,
-                            'server.thread_pool': 8,
-                            'log.screen': True,
-                            'log.access_file':"./logs/access.log",
-                            'log.error_file':"./logs/errors.log",
-                            'engine.autoreload_on':False,
-                            'tools.caching.on' : False
-                            })
+    cherrypy.config.update('webapiner.ini')
     
     #os.chdir("./api/NER")
     #kb = knowledge_base.KnowledgeBase("./api/NER/KBstatsMetrics.all")
@@ -49,6 +41,8 @@ def main():
     
     cherrypy.engine.subscribe("stop", core.getManager("kb").stop)
     core.getManager("kb").start()
+    core.getManager("kb").autoload()
+    #core.getManager("kb").load("KBstatsMetrics")
     #kbManager.load("DUMP_FLTRD.ascii")
     cherrypy.quickstart(Root(core), config = conf)
 

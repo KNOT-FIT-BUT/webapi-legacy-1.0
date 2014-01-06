@@ -39,8 +39,8 @@ APISwitches.prototype.init = function(){
 		);
 		this.container.append(
 			$(document.createElement('form')).addClass("form-horizontal").append(
-				this.createControlGroup("Restul type:", this.resultForm),
-				this.createControlGroup("Output type:", this.outputForm),
+				//this.createControlGroup("Restul type:", this.resultForm),
+				//this.createControlGroup("Output type:", this.outputForm),
 				this.createControlGroup("Parser:", this.parserForm)				
 				
 			)

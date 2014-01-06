@@ -94,7 +94,7 @@ textarea{
           <a class="brand" href="#">Web API for NER [beta]</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li><a href="index2.html">Parser</a></li>
+              <li><a href="index.html">NER</a></li>
               <li class="active"><a href="#about">Help</a></li>
             </ul>
           </div><!--/.nav-collapse -->
@@ -245,12 +245,13 @@ textarea{
   			<h3>FIGA parser</h3>
 
 		</div>	
+		<p>
 			Typ dotazu specifikuje operaci:
 		</p>
 		<ul>
 			<li><b>GET</b> - Vraci informace o dostupných KB pro NER a jejich stavu
 			<p>
-				REST API: <b>/api/ner/</b><br/>
+				REST API: <b>/api/figa/</b><br/>
 				Příklad odpovědi:
 				<pre>
 					[{"status": 0, "name": "DUMP_FLTRD.ascii"}, {"status": 0, "name": "DUMP_FLTRD.ascii_basic"}]
@@ -317,7 +318,30 @@ textarea{
 				</pre>
   			</li> 
 		</ul>
-	
+	<div class="page-header">
+		<h3>Popis výstupního JSONu</h3>
+	</div>	
+	<p>
+		Výstupní JSON z webapi se dělí na dvě části - hlavička <b>header</b> a samotný výsledek <b>result</b>
+	</p>
+	<h4>header</h4>
+	se sestává se ze 4 položek
+	<ul>
+		<li>status - 1 pokud se vyskytla chyba, jinak 0</li>
+		<li>msg - výpis chybových zpráv</li>
+		<li>processor - údaj jaký nástroj byl použit [figa|ner], zatím neimplementováno</li>
+		<li>groups - asociativní pole ve tvaru <i>prefix:text</i> kde text je popis pro skupiny entit ve znalostní bázi. Využívá se při generování GUI</li>
+	</ul>
+	<h4>result</h4>
+	je pole výsledků. Může nabývat 3 různých hodnot. Pro data a intervaly obsahuje pouze jediný klíč a to <b>interavals</b> a <b>dates</b> jekož hodnota je pole jednotlivých výskytů. 
+	Jinak obsahuje data ze znalostní báze pod klíčem <b>kb_data</b> a pak pole jednotlivých výskytů dané entity v textu pod klíčem <b>items</b>. 
+	Pořadí a význam jednotlivycýh položek je určen následovně:
+	<ul>
+		<li>intervals - začátek výskytu, konec výskytu, text, normalizované datum od, normalizované datum do</li>
+		<li>dates - začátek výskytu, konec výskytu, text, normalizované datum</li>
+		<li>items - začátek výskytu, konec výskytu, text</li>
+	</ul> 
+	Výše uvedené položky mají v GUI ješte na posledním místě ID, ale tato informace není součástí výstupu z webapi a přidána dodatečně až v GUI.
    <hr>   
 	<footer>
         <p>&copy; KNOT Group 2013</p>

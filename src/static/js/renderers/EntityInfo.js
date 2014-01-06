@@ -4,6 +4,7 @@ function EntityInfo(cnt_id){
 	this.container = $(cnt_id);
 	this.legend="Entity Info";
 	this.info_list = $(document.createElement("ul"));
+	this.gender_list = {'M':'Male','F':'Female','U':'Unknown','O':'Others'};
 	
 };
 
@@ -33,9 +34,14 @@ EntityInfo.prototype.update = function(kb_row){
 		}else if(i.endsWith("url")){
 			liitem.text(i + ": ");
 			liitem.append($(document.createElement('a')).attr('href',kb_row[i]).text(kb_row[i]));
+		}else if(i == "ulan id"){
+				liitem.text(i + ": ");
+			    liitem.append($(document.createElement('a')).attr('href','http://www.getty.edu/vow/ULANFullDisplay?find=&role=&nation=&subjectid='+kb_row[i]).text(kb_row[i]));
 		}else if(i == "image"){
 			//updateImagePane(kb_row[i]);
 			liitem.text(i + ": "  + kb_row[i].join(", "));
+		}else if(i == "gender"){
+			liitem.text(i + ": "  + this.gender_list[kb_row[i]]);
 		}else{
 			if(Array.isArray(kb_row[i])){
 				data = kb_row[i].join(", ");	

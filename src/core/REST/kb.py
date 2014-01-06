@@ -21,7 +21,10 @@ class KBHandler():
         
     @cherrypy.tools.json_out()
     def GET(self, *flags, **kw):
-        if "loaded" in flags:
+        if "reload" in flags:
+            self.kbmanager.reloadKBListFromFolder()  
+            return self.kbmanager.getStatus()
+        elif "loaded" in flags:
             return self.kbmanager.kb_online
         else:
             return self.kbmanager.getStatus()

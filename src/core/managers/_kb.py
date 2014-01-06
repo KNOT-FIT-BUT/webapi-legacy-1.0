@@ -32,7 +32,7 @@ class KBManager(threading.Thread):
         self.load_qeue = deque()
         self.kb_factory = KBFactory(base_folder, kb_relative)
         self.__loadKBListFromFolder()
-        print [self.kb_list[k].get_stats() for k in self.kb_list.keys()]
+        #print [self.kb_list[k].get_stats() for k in self.kb_list.keys()]
     
     def run(self):
         self.quit.clear()
@@ -53,7 +53,17 @@ class KBManager(threading.Thread):
             if filename[1] == ".kb":
                 self.kb_list[filename[0]] = self.kb_factory.getKB(filename[0])
         
-    
+    def reloadKBListFromFolder(self):
+        files = [os.path.splitext(f) for f in os.listdir(self.kb_folder) if os.path.isfile(os.path.join(self.kb_folder,f))]
+        for kb_name in self.kb_list.keys():
+            if self.kb_list[kb_name].status == 0:
+                del self.kb_list[kb_name]
+                
+        for filename in set(files):
+            if filename[1] == ".kb" and filename[0] not in self.kb_list.keys():
+                self.kb_list[filename[0]] = self.kb_factory.getKB(filename[0]) 
+                
+            
     
     def getAvailable(self):
         return self.kb_list.keys()
@@ -93,6 +103,12 @@ class KBManager(threading.Thread):
             return self.kb_list[kb_name]
         else:
             return None
+        
+    def autoload(self):
+        for kb_name in self.kb_list.keys():
+            if self.kb_list[kb_name].preload():
+                self.load(kb_name);
+            
         
     
     

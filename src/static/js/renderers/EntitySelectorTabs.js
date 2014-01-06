@@ -103,7 +103,15 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 	this.clear();
 	this.generateTabs(prefix_desc);
 	var divlist = this.tab_content_named;
-	 
+	
+	var prefix_cnt = {"all":0};
+	var undef_cnt = 0;
+	if(prefix_desc != null && prefix_desc != undefined){
+		for(var e in prefix_desc){
+			prefix_cnt[e] = 0;
+		}
+		
+	} 
 	
 	
 	for(var i in kb_data){
@@ -122,6 +130,8 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 				i_data = kb_row['name'];
 			}*/
 			prefix = i_id.charAt(0);
+			prefix_cnt[prefix]++;
+			prefix_cnt["all"]++;
 			if(prefix == "a" ){
 				if(i_data == ""){
 					i_data = kb_row["preferred term"];
@@ -140,6 +150,7 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 		}else{
 			i_data = kb_row["name"];	
 			divlist["all"].children().first().append($(document.createElement('li')).addClass(ci_id).text(i_data).addClass(i).click(this.callback));
+			prefix_cnt["all"]++;
 		}
 		
 		
@@ -147,5 +158,32 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 		
 		
 	}
+	this.hideEmptyTabs(prefix_cnt);
 
+};
+
+EntityTab.prototype.hideEmptyTabs = function(data){
+	var text;
+	var item;
+	var total = 0;
+	
+	for(e in data){
+		if(data[e] == 0){
+			$("#estt-"+e).hide();
+		}else{
+			item = $("#estt-"+e +" > a");
+			text = item.text();
+			text += "  (" + data[e] +")";
+			item.text(text);
+			//item.append($(document.createElement('span')).addClass("badge badge-inverse").text(data[e]));
+
+		}
+		
+	}
+/*	item = $("#estt-all > a");
+			text = item.text();
+			text += "  (" + total +")";
+			item.text(text);
+	*/
+	
 };

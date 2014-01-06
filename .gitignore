@@ -1,6 +1,8 @@
 src/api/NER/
 src/api/NER_/
+src/api/NER_OLD/
 src/api/automats/
+sec/
 
 *.pyc
 *.log

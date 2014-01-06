@@ -69,6 +69,12 @@ class KnowledgeBaseAdapter(object):
     
         with open(os.path.join(self.kb_folder, self.kb_name+".json"),"w") as f:
                 f.write(json.dumps({"columns":self.kb_columns,"conf":self.kb_conf},indent=2, separators=(',', ': ')))
+                
+    def preload(self):
+        if self.kb_conf is not None and "preload" in self.kb_conf.keys():
+            return self.kb_conf["preload"]
+        else:
+            return False
 
 def _VmB(VmKey):
     '''Private.
