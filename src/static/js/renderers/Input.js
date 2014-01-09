@@ -7,7 +7,7 @@ function Input(cnt_id){
 	this.api_url = "";
 	this.legend = "Input text";
 	this.button = $(document.createElement("button")).attr({"class":"btn","id":"btn1"}).text("Annotate");
-	this.textarea = $(document.createElement("textarea")).attr({"rows":"15","class":"span8","type":"text",
+	this.textarea = $(document.createElement("textarea")).attr({"rows":"15","type":"text",
 				"placeholder":"Enter text here...","id":"textinput","name":"inputbox"});
 	this.offset = $(document.createElement("b")).text("0").attr("id","originaloffset");
 	this.filelist = $(document.createElement("ul")).attr({"class":"dropdown-menu","id":"fileList"});

@@ -35,14 +35,31 @@ function GUICore(){
   
   this.gEntityTab.registerOnSelectCallback($.proxy(this.onEntitySelectFromList,this));
   this.gbRV.registerOnSelectCallback($.proxy(this.onEntitySelectFromText,this));
-  
+  this.gEntityTab.registerOnColorChangeCallback($.proxy(this.saveColor,this));
 
   this.gInput.addAnnotateCallback($.proxy(this.onAnnotate,this));
   this.gKBManager.registerOnChangeCallback($.proxy(this.onKbChange,this));
   
   this.item_list = null;
   this.kb_data = null;
+  this.c_picker_element= null;
+  this.selected_element = null;
+  //localStorage.removeItem("colors");
+  if(localStorage["colors"] != null){
+  	  this.colors = JSON.parse(localStorage["colors"]);
+  	  console.log(this.colors);
+  }else{
+	  this.colors = {"a":"#00CC00","p":"#00CC00","l":"#667cff","w":"#ff9e00","c":"#ff5ce1",
+				   "e":"#b0bfd2","f":"#9666ff","d":"#ffd792","m":"#bf0000",
+				   "g":"#9e90a3","n":"#669900","s":"#c5e26d","t":"#ffd070"};
+  }
   
+  //this.gbRV.setColors(this.colors);
+  this.gEntityTab.setColors(this.colors);
+  for(var c in this.colors){
+  		changecss("."+c,"color",this.colors[c]);
+  		changecss("#est_filter-"+c,"background-color",this.colors[c]);
+  }
 };
 
 
@@ -104,7 +121,7 @@ GUICore.prototype.outputGenerator = function(raw_data){
 				var id ="s-" + datesID.toString();
 				date.push(id);
 				this.item_list.push(date);
-				this.kb_data[id] = {'id':id,'name':date[2], 'type':'Date'};
+				this.kb_data[id] = {'id':id,'name':date[2], 'normalized':date[3]};
 				datesID++;
 			}
 		}else if (item.hasOwnProperty("intervals")){ 
@@ -114,7 +131,7 @@ GUICore.prototype.outputGenerator = function(raw_data){
 				var id = "t-" + datesID.toString();
 				date.push(id);
 				this.item_list.push(date);
-				this.kb_data[id] = {'id':id,'name':date[2],'type':'Interval'};
+				this.kb_data[id] = {'id':id,'name':date[2],'normalized-from':date[3],'normalized-to':date[4]};
 				datesID++;
 			}
 
@@ -147,21 +164,62 @@ GUICore.prototype.onEntitySelectFromText = function(event){
 	
 	this.onEntitySelect(group_id);
 	
+	if(event.ctrlKey){
+		//alert($(element).text());
+		this.c_picker_element = $(element);
+		var color = $(element).css("color");
+		$(element).colorpicker({"color":color}).colorpicker('show');
+		$(element).on("hidePicker",$.proxy(this.destroyColorPicker,this));
+		$(element).on("changeColor",$.proxy(this.onUpdateColor,this));
+		
+	}
+	
 	
 };
 
 GUICore.prototype.onEntitySelectFromList = function(event){
 	var element = event.target;
-	var group_id = $(element).attr("class");
+	var group_id = $(element).attr("class").split(/\s+/)[0];;
 	this.gbRV.focusEntity(group_id);
 	this.onEntitySelect(group_id);
 	
+};
 
+
+GUICore.prototype.destroyColorPicker = function(ev){
+	if(this.c_picker_element != null){
+		this.c_picker_element.colorpicker('destroy');
+		var group_id = this.c_picker_element.attr("class").split(/\s+/)[0].split("-")[0];
+		var color = ev.color.toHex();
+		this.saveColor(group_id,color);
+		this.c_picker_element.css("color","");
+		this.c_picker_element = null;
+	}
+	
+};
+
+GUICore.prototype.onUpdateColor = function(ev){
+	if(this.c_picker_element != null){
+		var group_id = this.c_picker_element.attr("class").split(/\s+/)[0];
+		var color = ev.color.toHex();
+		this.c_picker_element.css("color",color);
+	}
+};
+
+GUICore.prototype.saveColor = function(group_id, color){
+		//alert([group_id,color]);
+		this.colors[group_id] = color;
+		localStorage["colors"] = JSON.stringify(this.colors);
+		console.log([group_id, color]);
+		changecss("."+group_id,"color",color);
+		changecss("#est_filter-"+group_id,"background-color",color);
+	
 };
 
 GUICore.prototype.onEntitySelect = function(group_id){
 	$(".sel").each(function(){
 	  $(this).removeClass("sel");
+	  
 	});
 	
 	$("."+group_id).each(function(){

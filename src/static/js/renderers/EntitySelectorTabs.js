@@ -7,7 +7,9 @@ function EntityTab(cnt_id){
 	this.tab_content = null;
 	this.tab_content_named = new Array();
 	this.callback = new function(){};
+	this.color_callback = new function(){};
 	this.tab_cnt = 1;
+	this.colors = {};
 
 };
 	
@@ -31,47 +33,85 @@ EntityTab.prototype.clear = function(){
 	this.tab_content_named = new Array();
 };
 
+EntityTab.prototype.setColors  = function(colors){
+	this.colors = colors;
+};
+
 EntityTab.prototype.generateTabs = function(prefix_desc){
 	
+	var first_tag = (prefix_desc == undefined || prefix_desc == null) ? "undf" : "ALL";
+	console.log(first_tag);
 
 	var item = $(document.createElement("li"));
-	item.addClass("active").attr("id","estt-all").append(
-		$(document.createElement("a")).attr({"href":"#est_filter-ALL","data-toggle":"tab"}).text("All")
+	item.addClass("active").attr("id","estt-"+first_tag).append(
+		$(document.createElement("a")).attr({"href":"#est_filter-"+first_tag,"data-toggle":"tab"}).text("All")
 	);
-	var datadiv = $(document.createElement("div")).attr({"id":"est_filter-ALL"}).addClass("tab-pane").addClass("active").append(
-		$(document.createElement("ul")).attr({"id":"est_ul-ALL"}).addClass("results")
+
+	var datadiv = $(document.createElement("div")).attr({"id":"est_filter-"+first_tag}).addClass("tab-pane").addClass("active").append(
+		$(document.createElement("ul")).attr({"id":"est_ul-"+first_tag}).addClass("results")
 	);
 	
-	this.tab_content_named["all"] = datadiv;
+	this.tab_content_named[first_tag] = datadiv;
 	
 	this.tab_list.append(item);
 	this.tab_content.append(datadiv);
-	
+	var ccalbck = this.color_callback;
+	var QQ;
 	if(prefix_desc != null && prefix_desc != undefined){
 		for(var e in prefix_desc){
 			item = $(document.createElement("li"));
 			var name = prefix_desc[e];
+			QQ = e;
+			var color = (e in this.colors) ? this.colors[e] : "#000000";
 			item.attr("id","estt-"+e).append(
 				$(document.createElement("a")).attr({"href":"#est_filter-"+e,"data-toggle":"tab"}).text(name)
 			);
+			var btn = $(document.createElement("button")).addClass("btn btn-mini").attr("data-group",e).text("select color").colorpicker({"color":color});
+			btn.on("hidePicker",function(ev){
+						var id = $(ev.target).attr("data-group");
+						ccalbck(id,ev.color.toHex());
+					});
+			
 			datadiv = $(document.createElement("div")).attr("id","est_filter-"+e).addClass("tab-pane").append(
-				$(document.createElement("ul")).attr({"id":"est_ul-"+e}).addClass("results")
+				$(document.createElement("div")).addClass("centered").append(
+					btn
+				),
+				$(document.createElement("ul")).attr({"id":"est_ul-"+e}).addClass("results").css("background-color","white")
 			);
+			//datadiv.colorpicker({"color":color});
 			this.tab_content_named[e] = datadiv;
 			this.tab_list.append(item);
 			this.tab_content.append(datadiv);
 			this.tab_cnt++;
 		}
 		
+	}else{
+		var color = ("undf" in this.colors) ? this.colors["undf"] : "#000000";
+		var btn = $(document.createElement("button")).addClass("btn btn-mini").attr("data-group","undf").text("select color").colorpicker({"color":color});
+		btn.on("hidePicker",function(ev){
+						var id = $(ev.target).attr("data-group");
+						ccalbck(id,ev.color.toHex());
+					});
+		datadiv.prepend(
+			$(document.createElement("div")).addClass("centered").append(
+						btn
+					)
+		);
 	}
 	
 
 	
 };
 
+
+
 EntityTab.prototype.registerOnSelectCallback = function(fnc){
 	this.callback = fnc;
 	
+};
+
+EntityTab.prototype.registerOnColorChangeCallback = function(fnc){
+	this.color_callback = fnc;
 };
 
 EntityTab.prototype.focusEntity = function(ent_id){
@@ -79,7 +119,7 @@ EntityTab.prototype.focusEntity = function(ent_id){
 	
 	var div;
 	if(this.tab_cnt == 1){
-		div = this.tab_content_named["all"];
+		div = this.tab_content_named["undf"];
 	}else{
 		var prefix = ent_id.split("-")[0];
 		//alert(prefix);
@@ -103,8 +143,9 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 	this.clear();
 	this.generateTabs(prefix_desc);
 	var divlist = this.tab_content_named;
-	
-	var prefix_cnt = {"all":0};
+	var first_tag = (prefix_desc == undefined || prefix_desc == null) ? "undf" : "ALL";
+	var prefix_cnt = {};
+	prefix_cnt[first_tag] = 0;
 	var undef_cnt = 0;
 	if(prefix_desc != null && prefix_desc != undefined){
 		for(var e in prefix_desc){
@@ -113,29 +154,22 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 		
 	} 
 	
-	
-	for(var i in kb_data){
-		var kb_row = kb_data[i];
+	kb_data_sorted = this.KBserializeAndsort(kb_data);
+	//console.log(kb_data_sorted);
+	for(var i in kb_data_sorted){
+		var kb_row = kb_data_sorted[i];
+		//console.log(kb_row);
 		var i_id = kb_row["id"];
-		var ci_id = i;
+		var ci_id = i_id.replace(":","-");
 		var prefix = null;
 		var i_data = "";
 		if(prefix_desc != null && prefix_desc != undefined){
-			/*if(kb_row.hasOwnProperty("display term")){
-				i_data = kb_row["display term"];
-				if(i_data == "" && kb_row.hasOwnProperty("preferred term")){
-						i_data = kb_row["preferred term"];
-					}
-			}else if(kb_row.hasOwnProperty("name")){
-				i_data = kb_row['name'];
-			}*/
 			prefix = i_id.charAt(0);
 			prefix_cnt[prefix]++;
-			prefix_cnt["all"]++;
+			prefix_cnt[first_tag]++;
 			if(prefix == "a" ){
-				if(i_data == ""){
-					i_data = kb_row["preferred term"];
-				}
+				i_data = kb_row["preferred term"];
+
 				if(i_data == ""){
 					i_data = kb_row["name"];
 				}
@@ -145,21 +179,84 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 			}else{
 				i_data = kb_row['name'];
 			}
-			divlist[prefix].children().first().append($(document.createElement('li')).addClass(ci_id).text(i_data).addClass(i).click(this.callback));
-			divlist["all"].children().first().append($(document.createElement('li')).addClass(ci_id).text(i_data).addClass(i).click(this.callback));
+			divlist[prefix].find(".results").append($(document.createElement('li')).addClass(ci_id).text(i_data).click(this.callback));
+			divlist[first_tag].find(".results").append($(document.createElement('li')).addClass(ci_id).text(i_data).click(this.callback));
 		}else{
-			i_data = kb_row["name"];	
-			divlist["all"].children().first().append($(document.createElement('li')).addClass(ci_id).text(i_data).addClass(i).click(this.callback));
-			prefix_cnt["all"]++;
+		    i_data = kb_row["name"];	
+			divlist[first_tag].find(".results").append($(document.createElement('li')).addClass(ci_id).text(i_data).click(this.callback));
+			prefix_cnt[first_tag]++;
+
 		}
 		
-		
-
-		
+				
 		
 	}
-	this.hideEmptyTabs(prefix_cnt);
+	
+	
 
+		this.hideEmptyTabs(prefix_cnt);	
+
+};
+
+
+
+EntityTab.prototype.KBserializeAndsort = function(kb_data){
+
+	var s_kb_data = new Array();
+	var s_dates = new Array();
+	var s_intervals = new Array();
+	
+	for(var i in kb_data){
+		var kb_row = kb_data[i];
+		var i_id = kb_row["id"];
+		prefix = i_id.charAt(0);
+		if(prefix == "s"){
+			s_dates.push(kb_row);
+		}else if(prefix == "t"){
+		 	s_intervals.push(kb_row);
+		}else{
+			s_kb_data.push(kb_row);
+		}
+	}
+	
+	s_kb_data.sort(function(a,b){
+		var sa = a["name"];
+		var sb = b["name"];
+		if(a["id"].charAt(0) == "a"){
+			sa = a["preferred term"];
+		}
+		if(b["id"].charAt(0) == "a"){
+			sb = b["preferred term"];
+		}
+		var upA = sa.toUpperCase();
+    	var upB = sb.toUpperCase();
+    	return (upA < upB) ? -1 : (upA > upB) ? 1 : 0;
+		//return sa > sb;
+	});
+	
+	s_dates.sort(function(a,b){
+		var da = a["normalized"].split("-");
+		var db = b["normalized"].split("-");
+		var date_a = new Date(da[0],(da[1]-1),da[2]);
+		var date_b = new Date(db[0],(db[1]-1),db[2]);
+		return (date_a < date_b) ? -1 : (date_a > date_b) ? 1 : 0;
+		//return a["normalized"] > b["normalized"];
+	});
+
+	s_intervals.sort(function(a,b){
+		var da = a["normalized-from"].split("-");
+		var db = b["normalized-from"].split("-");
+		var date_a = new Date(da[0],(da[1]-1),da[2]);
+		var date_b = new Date(db[0],(db[1]-1),db[2]);
+		return (date_a < date_b) ? -1 : (date_a > date_b) ? 1 : 0;
+		//return a["normalized-from"] > b["normalized-from"];
+	});
+	var ret = new Array();
+	ret = ret.concat(s_kb_data);
+	ret = ret.concat(s_dates);
+	ret = ret.concat(s_intervals);
+
+	return ret;
 };
 
 EntityTab.prototype.hideEmptyTabs = function(data){
@@ -168,6 +265,7 @@ EntityTab.prototype.hideEmptyTabs = function(data){
 	var total = 0;
 	
 	for(e in data){
+		console.log([e,data[e]]);
 		if(data[e] == 0){
 			$("#estt-"+e).hide();
 		}else{
@@ -180,10 +278,5 @@ EntityTab.prototype.hideEmptyTabs = function(data){
 		}
 		
 	}
-/*	item = $("#estt-all > a");
-			text = item.text();
-			text += "  (" + total +")";
-			item.text(text);
-	*/
 	
 };

@@ -105,8 +105,10 @@ APISwitches.prototype.updateUIList = function(){
 		var item = $(document.createElement("option")).text(entry["name"]).val(entry["name"]);
 		if(entry["status"] == 0){
 			item.attr("disabled","disabled");
+			self.uni_sel.append(item);
+		}else{
+			self.uni_sel.prepend(item);
 		}
-		self.uni_sel.append(item);
 	});
 	$("#proc_select option:not([disabled]):first-child").prop("selected", true);
 };

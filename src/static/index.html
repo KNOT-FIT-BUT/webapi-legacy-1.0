@@ -10,7 +10,7 @@
 
     <!-- Le styles -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
-    
+    <link href="/css/bootstrap-colorpicker.min.css" rel="stylesheet">
    
     <style>
       body {
@@ -33,31 +33,26 @@ pre {
     word-break: break-word;
     word-wrap: normal !important;
     white-space: pre-wrap !important;
+    cursor:text;
 }
 
 
-
-.p,.l,.w,.c,.e,.f,.d,.m,.g,.n,.s,.t{
-	cursor: text;
+.centered
+{
+    text-align:center;
+    background-color:white;
 }
+
 
 .sel{
+	
+	text-decoration:underline;
+	font-size:18px;
+	font-weight:bold;
 	background-color: #333000;
-	color: white;
 }
 
-.undf, .p, .a{color:#00CC00;}
-.l{color:#667cff;}
-.w{color:#ff9e00;}
-.c{color:#ff5ce1;}
-.e{color:#b0bfd2;}
-.f{color:#9666ff;}
-.d{color:#ffd792;}
-.m{color:#bf0000;}
-.g{color:#9e90a3;}
-.n{color:#669900;}
-.s{color:#c5e26d;}
-.t{color:#ffd070;}
+
 
 textarea{
 	min-height: 100%;
@@ -66,10 +61,26 @@ textarea{
     height: 100%;
 }
 
-.peopleCarouselImg img {
+.carousel-div{
+	height:400px;
+}
+
+
+.carousel-inner>.item>img {
   width: auto;
-  margin: 0 auto;
+  margin: auto;
   height:400px;
+}
+
+.results li:nth-child(even) {background: #EEEEEE}
+.results li:nth-child(odd) {background: #FFF}
+
+.carousel-indicators li {
+  background-color: purple;
+}
+
+.carousel-indicators .active {
+  background-color: red;
 }
     </style>
     <link href="css/bootstrap-responsive.css" rel="stylesheet">
@@ -110,20 +121,17 @@ textarea{
 			<ul class="nav nav-tabs" id="myTab">
   				<li class="active"><a href="#input" data-toggle="tab">Input</a></li>
   				<li><a href="#output" data-toggle="tab">Output</a></li>
+  				<li><a href="#settings" data-toggle="tab">Settings</a></li>
 			</ul>
 			
 		</div>
  			
 		<div class="tab-content" id="mainTabPaneContent">
 			<div class="tab-pane active" id="input">
-  				<div class="row">
- 					<div class="span4" id="apiswitches">
-					</div>
-					<div class="span4" id="kbmanagerblock">
-					</div>
-
+  				<div class="container">
+ 			
 		    	
-	    			<div class="span8" id="inputblock">
+	    			<div class="span12" id="inputblock">
 						
 	 				</div>
  				</div>
@@ -136,6 +144,15 @@ textarea{
 					</div>
 					<div class="span4" id="EntityInfoContainer">
 					</div>
+				</div>		
+			</div>
+			<div class="tab-pane" id="settings">
+				<div class="container" id="settingsPane">
+					<div class="span4" id="apiswitches">
+					</div>
+					<div class="span4" id="kbmanagerblock">
+					</div>
+					
 				</div>		
 			</div>
 		</div>
@@ -154,6 +171,7 @@ textarea{
 	<script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
     <script type="text/javascript" src="js/core.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
+    <script type="text/javascript" src="js/bootstrap-colorpicker.min.js"></script>
     <script type="text/javascript" src="js/jquery.lazyload.js"></script>
     <script type="text/javascript" src="js/jquery.scroolto.js"></script>
 	<script type="text/javascript" src="js/renderers/KBmanager.js"></script>
@@ -165,6 +183,7 @@ textarea{
 	<script type="text/javascript" src="js/renderers/OutputTabs.js"></script>
 	<script type="text/javascript" src="js/renderers/EntityInfo.js"></script>
 	<script type="text/javascript" src="js/renderers/EntityImg.js"></script>
+	<script type="text/javascript" src="js/changeCSS.js"></script>
     
   
   </body>
