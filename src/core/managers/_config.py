@@ -1,12 +1,12 @@
 '''
 Created on 24. 11. 2013
 
-@author: casey
+@author: xjerab13
 '''
 
 class ConfigManager(object):
     '''
-    classdocs
+    Config manager contains and manage configuration data from ini file.
     '''
 
 

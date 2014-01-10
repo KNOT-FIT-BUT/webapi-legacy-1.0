@@ -1,7 +1,7 @@
 '''
 Created on 10.3.2013
 
-@author: Casey
+@author: xjerab13
 '''
 
 import cherrypy
@@ -15,7 +15,9 @@ from core.adapters import parse_result
 
 
 class Parser():
-    
+    '''
+    Parser class, handling requests for "/parser"
+    '''
     def __init__(self, core):
         self.kb = core.getManager("kb")
         self.base_folder = core.base_folder
@@ -23,6 +25,10 @@ class Parser():
     @cherrypy.expose
     @tools.encode(encoding='UTF-8')
     def index(self, text):
+        '''
+        Handling request for "/parser"
+        @text - string contains data from ?=text http argument
+        '''
         txt = text
         print len(txt.encode('ascii','replace'))
         result = recognize(self.kb, txt.encode('ascii','replace'), False, False)
@@ -34,6 +40,7 @@ class Parser():
     
     @cherrypy.expose    
     def testFilesList(self):
+        '''Retrun json of aviable text files for quick testing'''
         #print os.listdir(os.path.join(os.getcwd(),'test'))
         files = [f for f in os.listdir(os.path.join(self.base_folder,'static','example_texts')) if os.path.isfile(os.path.join(self.base_folder,'static','example_texts',f))]
         cherrypy.response.headers['Content-Type'] = "application/json"
@@ -41,6 +48,11 @@ class Parser():
     
     @cherrypy.expose
     def testFileContent(self, filename):
+        '''
+        Return content of texting file.
+        @filename - name of testing file for load
+        @return - content of filename
+        '''
         path = os.path.join(self.base_folder,'static','example_texts',filename)
         text = ""
         with open(path,'r') as f:

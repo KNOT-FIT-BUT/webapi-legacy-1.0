@@ -1,7 +1,7 @@
 '''
 Created on 23. 10. 2013
 
-@author: casey
+@author: xjerab13
 '''
 import os
 import cherrypy
@@ -9,14 +9,14 @@ import cherrypy
 
 class FigaHandler():
     '''
-    classdocs
+    Figa handler server data about aviable FSA automas and parse text via figa tool.
     '''
 
     exposed = True
     
     def __init__(self, core):
         '''
-        Constructor
+        @core - instance of main Core class
         '''
         self.core = core
         self.fsa_manager = core.getManager("fsa")
@@ -25,6 +25,10 @@ class FigaHandler():
         
     @cherrypy.tools.json_out()
     def GET(self, *flags, **kw):
+        '''
+        On GET request return json with info about available FSA automats for use.
+        @return - JSON to client 
+        '''
         fsalist = self.fsa_manager.getFSAList()
         kblist = self.kb_manager.getLoaded()
         result = []
@@ -40,6 +44,9 @@ class FigaHandler():
     
     @cherrypy.tools.json_out()
     def POST(self, *flags, **kw):
+        '''
+        Performin text parsing via figa tool.
+        '''
         txt = kw.get("text")
         kb_name = flags[0] if len(flags) > 0 else None
         error_msg = []
@@ -66,10 +73,16 @@ class FigaHandler():
         
     @cherrypy.tools.json_out()
     def PUT(self, kbname):
+        '''
+        Unused.
+        '''
         pass
         
     @cherrypy.tools.json_out()
     def DELETE(self, kbname):
+        '''
+        Unused
+        '''
         pass
     
         

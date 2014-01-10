@@ -13,7 +13,7 @@ import re
 
 class ProcesssorManager(object):
     '''
-    classdocs
+    Encapsulate text parsing and output generating methods. 
     '''
 
 
@@ -25,6 +25,10 @@ class ProcesssorManager(object):
         
         
     def recognize(self, text, kb, fsa=None):
+        '''
+        Public universal recognize method. Parse text via selected parser and generate final output.
+        @return - data JSON of parsed text. 
+        '''
         result = None
         if fsa is not None:
             result = self.__FIGArecpgnizer(text, kb, fsa)
@@ -37,6 +41,11 @@ class ProcesssorManager(object):
     
     
     def bake_output(self, proc_res, kb):
+        '''
+        Bake output with KB config and KB data. Pair KB column names from KB config and row data from KB.
+        @proc_res - raw data from processing tools
+        @kb - instance of KB class
+        '''
         result = self.groupResultItems(proc_res)
         splitter = kb.kb_conf["value_splitter"] if kb.kb_conf["value_splitter"] is not None else ""
         splitter = splitter.encode("utf-8")
@@ -91,11 +100,22 @@ class ProcesssorManager(object):
         
     
     def __NERrecognizer(self, text, kb):
+        '''
+        Call NER tool.
+        @text - input text for processing
+        @kb - instance of loaded KB
+        '''
         return recognize(kb, text, False, False)
 
         
     
     def __FIGArecpgnizer(self, text, kb, fsa):
+        '''
+        Call figa tool.
+        @text - input text for protessing
+        @kb - instance of loaded KB
+        @fsa - FSA instance with automat
+        '''
         output = fsa.recognize(text)
         entities = []
         for line in output.split("\n")[:-1]:
@@ -114,6 +134,9 @@ class ProcesssorManager(object):
         return entities
         
     def groupResultItems(self, result):
+        '''
+        Group the same entities items into one container - saving bandwith data.
+        '''
         results_group = {}
         for item in result:
             if isinstance(item, dates.Date):

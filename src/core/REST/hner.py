@@ -1,7 +1,7 @@
 '''
 Created on 28. 10. 2013
 
-@author: casey
+@author: xjerab13
 '''
 
 import cherrypy
@@ -15,13 +15,13 @@ from core.adapters import *
 
 class NERHandler():
     '''
-    classdocs
+    NERHandler serve data about available KB for NER and parsing text via NER tool.
     '''
 
     exposed = True
     def __init__(self, core):
         '''
-        Constructor
+        @ore - instance of main Core class.
         '''
         self.core = core
         self.kb_manager = core.getManager("kb")
@@ -29,6 +29,9 @@ class NERHandler():
         
     @cherrypy.tools.json_out()
     def GET(self, *flags, **kw):
+        '''
+        On GET return info about all available KB.
+        '''
         kblist = self.kb_manager.getStatus()
         result = []
         for kb in kblist:
@@ -41,6 +44,10 @@ class NERHandler():
     
     @cherrypy.tools.json_out()
     def POST(self, *flags, **kw):
+        '''
+        Paring text via NER tool.
+        @return - data JSON to client.
+        '''
         txt = kw.get("text")
         kb_name = flags[0] if len(flags) > 0 else None
         error_msg = []
