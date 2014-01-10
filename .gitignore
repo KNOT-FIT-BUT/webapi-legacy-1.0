@@ -8,6 +8,8 @@ sec/
 *.log
 *.fsa
 *.kb
+*.pid
+
 
 .*
 !.gitignore
