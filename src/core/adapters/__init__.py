@@ -1,4 +1,6 @@
-
+'''
+DEPRECATED!
+'''
 
 from ner import knowledge_base
 from ner import dates

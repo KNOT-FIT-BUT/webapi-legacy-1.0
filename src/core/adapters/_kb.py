@@ -1,3 +1,6 @@
+'''
+DEPRECATED!
+'''
 KBC_V1 = {
         "p" :["id","type","name","*alias",
                        "description", "*image", "*period of movement", "date of birth", "place of birth",

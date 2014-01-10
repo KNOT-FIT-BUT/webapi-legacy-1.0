@@ -1,7 +1,7 @@
 '''
 Created on 28. 11. 2013
 
-@author: casey
+@author: xjearb13
 '''
 
 import time, os
@@ -9,7 +9,7 @@ import json
 
 class KnowledgeBaseAdapter(object):
     '''
-    classdocs
+    Base class for KB_Basic and KB_NER
     '''
     
     OFFLINE = 0
@@ -31,6 +31,9 @@ class KnowledgeBaseAdapter(object):
         self.kb_conf = None
         
     def load(self):
+        '''
+        Load KB into memory and generate statistics. Loading implementation is overried inhereid class.
+        '''
         self.status = 2
         mem_start = _VmB('VmSize:')
         time_start = time.time()
@@ -42,12 +45,18 @@ class KnowledgeBaseAdapter(object):
         
         
     def drop(self):
+        '''
+        
+        '''
         self.status = 3
         self._drop()
         self.status = 0
         
         
     def get_stats(self):
+        '''
+        @return dict with info about KB.
+        '''
         return {"name":self.kb_name,
                 "size":self.kb_conf["memusage"],
                 "load_time":self.kb_conf["loadtime"],
@@ -56,6 +65,9 @@ class KnowledgeBaseAdapter(object):
                 } if self.kb_conf else {}
         
     def updateStats(self, loading, memory):
+        '''
+        Update statistics info in KB config file.
+        '''
         if self.kb_conf["memusage"] <= 0:
             self.kb_conf["memusage"] = memory
         else:
@@ -71,13 +83,17 @@ class KnowledgeBaseAdapter(object):
                 f.write(json.dumps({"columns":self.kb_columns,"conf":self.kb_conf},indent=2, separators=(',', ': ')))
                 
     def preload(self):
+        '''
+        @return - True if KB is marked for autoload at program startup.
+        '''
         if self.kb_conf is not None and "preload" in self.kb_conf.keys():
             return self.kb_conf["preload"]
         else:
             return False
 
 def _VmB(VmKey):
-    '''Private.
+    '''
+    Measure RAM usage of whole process.
     '''
     _proc_status = '/proc/%d/status' % os.getpid()
 

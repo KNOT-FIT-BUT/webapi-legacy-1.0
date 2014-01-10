@@ -6,7 +6,9 @@ import time
 from core.adapters.kb.abstract import KnowledgeBaseAdapter
 
 class KB_Basic(KnowledgeBaseAdapter):
-    
+    '''
+    Simple KB container for NON NER USAGE!
+    '''
     
     
     def __init__(self, base_folder, kb_folder_rel, filename, extension=".kb"):
@@ -17,6 +19,9 @@ class KB_Basic(KnowledgeBaseAdapter):
         
     
     def _load(self):
+        '''
+        Load KB from file via kb_loader.so.
+        '''
         count = commands.getoutput('wc -l ' + self.kb_path + ' | cut -d" " -f1')
         self.items_number = int(count)
         maxitem = 33 
@@ -29,6 +34,9 @@ class KB_Basic(KnowledgeBaseAdapter):
         self.status = KB_Basic.LOADED
     
     def _drop(self):
+        '''
+        Dealoc KB from memory via kb_loader.so
+        '''
         maxitem = 33 
         lib = cdll.LoadLibrary(os.path.join(self.base_folder, "api","NER","figav08","figa","kb_loader.so"))
         lib.queryTree.restype = c_void_p
@@ -48,12 +56,18 @@ class KB_Basic(KnowledgeBaseAdapter):
     
     
     def get_row(self, line):
+        '''
+        @return - list of KB row data
+        '''
         return self.lines[int(line) -1 ]
     
     def get_full_row(self, line):
         pass
     
     def isLoaded(self):
+        '''
+        Return True if KB is loaded into memory or False.
+        '''
         return True if self.lines else False
 
 

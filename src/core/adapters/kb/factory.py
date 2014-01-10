@@ -1,7 +1,7 @@
 '''
 Created on 25. 11. 2013
 
-@author: casey
+@author: xjerab13
 '''
 import os
 import json
@@ -10,7 +10,9 @@ from _ner import KB_NER
 
 
 class KBFactory():
-    
+    '''
+    Simple KB factory. Return reference to class by type of tool.
+    '''
     factories = {"ner":KB_NER,
                  "figa":KB_Basic
                  }
@@ -21,6 +23,11 @@ class KBFactory():
         
         
     def getKB(self, kb_name):
+        '''
+        Load kb confing from file, instantiate proper class with loaded data.
+        @kb_name - KB filename without extension.
+        @return - instance of KB_Basic or KB_NER
+        '''
         conf = self.__loadKBJson(kb_name)
         factory = conf["conf"]["processor"]
         kb = KBFactory.factories[factory](self.base_folder, self.kb_folder, kb_name)
@@ -31,6 +38,10 @@ class KBFactory():
     
     
     def __loadKBJson(self, kb_name):
+        '''
+        Load config json from KB confign, parse it and return as dict
+        @return - loaded config as dict
+        '''
         filename = kb_name + ".json"
         f = open(os.path.join(self.kb_folder, filename))
         conf = json.loads(f.read())
