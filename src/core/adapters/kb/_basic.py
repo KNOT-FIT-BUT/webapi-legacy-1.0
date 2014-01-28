@@ -11,8 +11,8 @@ class KB_Basic(KnowledgeBaseAdapter):
     '''
     
     
-    def __init__(self, base_folder, kb_folder_rel, filename, extension=".kb"):
-        super(KB_Basic, self).__init__(base_folder, kb_folder_rel, filename, extension)
+    def __init__(self, base_folder, kb_path):
+        super(KB_Basic, self).__init__(base_folder, kb_path)
         self.lines = None
         
         

@@ -19,8 +19,8 @@ class KB_NER(KnowledgeBaseAdapter):
     and unloading KB, all other calls are passed to original NER class.
     '''
     
-    def __init__(self, base_folder, kb_folder_rel, filename, extension=".kb"):
-        super(KB_NER, self).__init__(base_folder, kb_folder_rel, filename, extension)
+    def __init__(self, base_folder, kb_path):
+        super(KB_NER, self).__init__(base_folder, kb_path)
         self._kb = None
 
         

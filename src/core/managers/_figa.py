@@ -5,7 +5,7 @@ Created on 24. 11. 2013
 '''
 
 import os
-import figav08.figa.marker as figa
+from core.adapters._fsa import FSA
 
 
 class FSAManager(object):
@@ -31,7 +31,7 @@ class FSAManager(object):
         files = [os.path.splitext(f) for f in os.listdir(self.fsa_folder) if os.path.isfile(os.path.join(self.fsa_folder,f))]
         for filename in set(files):
             if filename[1] == ".fsa":
-                self.fsa_list[filename[0]] = FSA(self.fsa_folder, filename[0])
+                self.fsa_list[filename[0]] = FSA(self.fsa_folder, filename[0]+".fsa")
         
     
     def getFSAList(self):
@@ -57,19 +57,5 @@ class FSAManager(object):
         
     
     
-class FSA():
-    
-    def __init__(self, fsaf, ff):
-        self.fsa_folder = fsaf
-        self.filename = ff
-        
-        
-        
-    def recognize(self, text):
-        dictionary = figa.myList()
-        lang_file = None
-        dictionary.insert(os.path.join(self.fsa_folder,self.filename + ".fsa"))
-        seek_names = figa.marker(dictionary, lang_file)
-        output = seek_names.lookup_string(text)
-        return output 
+
     

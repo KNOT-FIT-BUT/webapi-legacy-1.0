@@ -6,8 +6,8 @@ Created on 28. 10. 2013
 import os
 from core.managers._kb import KBManager
 from core.managers._figa import FSAManager
-from core.managers.kb._processor import ProcesssorManager
-
+from core.managers._processor import ProcesssorManager
+from core.managers._assets import AssetsManager
 
 class Core(object):
     '''
@@ -31,14 +31,16 @@ class Core(object):
         '''
         self.kb_folder = os.path.join("api","automats")
         self.fsa_folder = os.path.join("api","automats")
+        self.asset_folder = os.path.join("api","automats")
     
     def initManagers(self):
         '''
         Initialize all managers core managers.
         '''
-        self.addManager("kb", KBManager(self.base_folder, self.kb_folder))
-        self.addManager("fsa", FSAManager(self.base_folder, self.fsa_folder))
+        #self.addManager("kb", KBManager(self.base_folder, self.kb_folder))
+        #self.addManager("fsa", FSAManager(self.base_folder, self.fsa_folder))
         self.addManager("proc", ProcesssorManager())
+        self.addManager("asset", AssetsManager(self.base_folder, self.asset_folder))
 
 
     def addManager(self, name, instance):
@@ -55,6 +57,8 @@ class Core(object):
         '''
         if name in self.managers.keys():
             return self.managers[name]
+        else:
+            return None
         
     def delManager(self, name):
         '''

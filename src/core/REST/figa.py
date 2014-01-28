@@ -19,9 +19,9 @@ class FigaHandler():
         @core - instance of main Core class
         '''
         self.core = core
-        self.fsa_manager = core.getManager("fsa")
-        self.kb_manager = core.getManager("kb")
+
         self.proc_manager = core.getManager("proc")
+        self.asset_manger = core.getManager("asset")
         
     @cherrypy.tools.json_out()
     def GET(self, *flags, **kw):
@@ -29,8 +29,8 @@ class FigaHandler():
         On GET request return json with info about available FSA automats for use.
         @return - JSON to client 
         '''
-        fsalist = self.fsa_manager.getFSAList()
-        kblist = self.kb_manager.getLoaded()
+        fsalist = self.asset_manger.getAssetList("fsa")
+        kblist = self.asset_manger.getLoaded()
         result = []
         for fsa in fsalist:
             kbo = 0
@@ -55,8 +55,7 @@ class FigaHandler():
         if kb_name is None:
             error_msg.append("No Knowledge Base / FSA specified!")
         if len(flags) > 0:
-            kb = self.kb_manager.getKB(flags[0])
-            fsa = self.fsa_manager.getFSA(flags[0])
+            kb, fsa = self.asset_manger.getAsset(flags[0])
             if fsa is None:
                 error_msg.append("Cant find FSA: " + flags[0])
             if kb is None:

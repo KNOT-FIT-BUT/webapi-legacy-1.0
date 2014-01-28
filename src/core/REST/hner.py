@@ -26,19 +26,20 @@ class NERHandler():
         self.core = core
         self.kb_manager = core.getManager("kb")
         self.proc_manager = core.getManager("proc")
+        self.asset_manger = core.getManager("asset")
         
     @cherrypy.tools.json_out()
     def GET(self, *flags, **kw):
         '''
         On GET return info about all available KB.
         '''
-        kblist = self.kb_manager.getStatus()
+        kblist = self.asset_manger.getStatus()
         result = []
         for kb in kblist:
-            if kb["processor"] == "ner":
-                result.append({"name":kb["name"],
-                           "status": 0 if kb["status"] < 3 else 1
-                           })
+            #if kb["processor"] == "ner":
+            result.append({"name":kb["name"],
+                       "status": 0 if kb["status"] < 3 else 1
+                       })
         return result
     
     
@@ -56,15 +57,14 @@ class NERHandler():
         if kb_name is None:
             error_msg.append("No Knowledge Base specified!")
         if len(flags) > 0:
-            kb = self.kb_manager.getKB(flags[0])
+            kb = self.asset_manger.getAsset(flags[0],"kb")
             if kb is None:
                 error_msg.append("Cant find Knowledge base: " + flags[0])
             elif kb.status < 4:
                 error_msg.append("Knowledge base is not loaded! - : " + flags[0])
             else:
                 return self.proc_manager.recognize(txt.encode("utf-8"), kb, None)
-            #result = recognize(kb, txt.encode("utf-8"), False, False)
-            #rg =  parse_result(result, kb, 'classic')
+
         return {"header":{"status":1,
                             "msg":error_msg  },
                 }

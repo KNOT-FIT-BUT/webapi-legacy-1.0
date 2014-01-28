@@ -36,7 +36,6 @@ class KBFactory():
         #print type(conf["conf"]["value_splitter"])
         return kb
     
-    
     def __loadKBJson(self, kb_name):
         '''
         Load config json from KB confign, parse it and return as dict

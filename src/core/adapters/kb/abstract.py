@@ -18,17 +18,22 @@ class KnowledgeBaseAdapter(object):
     UNLOADING = 3
     LOADED = 4
 
-    def __init__(self, base_folder, kb_folder_rel, filename, extension=".kb"):
+    def __init__(self, base_folder, kb_path, kb_name="undefined"):
         '''
         Constructor
         '''
         self.base_folder = base_folder
-        self.kb_folder = os.path.join(self.base_folder, kb_folder_rel)
-        self.kb_name = filename
-        self.kb_path = os.path.join(self.kb_folder, self.kb_name+extension)
+        self.kb_path = kb_path
         self.status = 0
-        self.kb_columns = None
-        self.kb_conf = None
+        self.columns = None
+        self.conf = None
+        self.kb_name = kb_name
+        
+    def setConf(self, conf):
+        self.conf = conf
+        
+    def setColumns(self, columns):
+        self.columns = columns
         
     def load(self):
         '''
@@ -57,37 +62,37 @@ class KnowledgeBaseAdapter(object):
         '''
         @return dict with info about KB.
         '''
-        return {"name":self.kb_name,
-                "size":self.kb_conf["memusage"],
-                "load_time":self.kb_conf["loadtime"],
+        return {
+                "size":self.conf["memusage"],
+                "load_time":self.conf["loadtime"],
                 "status":self.status,
-                "processor":self.kb_conf["processor"]
-                } if self.kb_conf else {}
+                "processor":self.conf["processor"]
+                } if self.conf else {}
         
     def updateStats(self, loading, memory):
         '''
         Update statistics info in KB config file.
         '''
-        if self.kb_conf["memusage"] <= 0:
-            self.kb_conf["memusage"] = memory
+        if self.conf["memusage"] <= 0:
+            self.conf["memusage"] = memory
         else:
-            self.kb_conf["memusage"] += memory
-            self.kb_conf["memusage"] /= 2
-        if self.kb_conf["loadtime"] <= 0:
-            self.kb_conf["loadtime"] = loading
+            self.conf["memusage"] += memory
+            self.conf["memusage"] /= 2
+        if self.conf["loadtime"] <= 0:
+            self.conf["loadtime"] = loading
         else:
-            self.kb_conf["loadtime"] += loading
-            self.kb_conf["loadtime"] /= 2
+            self.conf["loadtime"] += loading
+            self.conf["loadtime"] /= 2
     
-        with open(os.path.join(self.kb_folder, self.kb_name+".json"),"w") as f:
-                f.write(json.dumps({"columns":self.kb_columns,"conf":self.kb_conf},indent=2, separators=(',', ': ')))
+        #with open(os.path.join(self.kb_folder, self.kb_name+".json"),"w") as f:
+        #        f.write(json.dumps({"columns":self.kb_columns,"conf":self.kb_conf},indent=2, separators=(',', ': ')))
                 
     def preload(self):
         '''
         @return - True if KB is marked for autoload at program startup.
         '''
-        if self.kb_conf is not None and "preload" in self.kb_conf.keys():
-            return self.kb_conf["preload"]
+        if self.conf is not None and "preload" in self.conf.keys():
+            return self.conf["preload"]
         else:
             return False
 

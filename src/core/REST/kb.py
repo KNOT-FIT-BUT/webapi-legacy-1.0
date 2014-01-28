@@ -17,7 +17,7 @@ class KBHandler():
         @core - instance of main Core class
         '''
         self.core = core
-        self.kbmanager = core.getManager("kb")
+        self.asset_manger = core.getManager("asset")
         
     @cherrypy.tools.json_out()
     def GET(self, *flags, **kw):
@@ -27,12 +27,14 @@ class KBHandler():
         @return - data JSON with info about KB 
         '''
         if "reload" in flags:
-            self.kbmanager.reloadKBListFromFolder()  
-            return self.kbmanager.getStatus()
+            pass
+            #reload from folder
         elif "loaded" in flags:
-            return self.kbmanager.kb_online
+            pass
+            #return list of loaded KBs
         else:
-            return self.kbmanager.getStatus()
+            return self.asset_manger.getStatus()
+            
     
     @cherrypy.tools.json_out()
     def POST(self, *flags, **kw):
@@ -44,7 +46,8 @@ class KBHandler():
         Add KB to load queue.
         @kbname - KB filename without extension
         '''
-        self.kbmanager.load(kbname)
+        self.asset_manger.loadKB(kbname)
+        pass
         
     @cherrypy.tools.json_out()
     def DELETE(self, kbname):
@@ -52,6 +55,7 @@ class KBHandler():
         Add KB to unload queue.
         @kbname - KB filename without extension.
         '''
-        self.kbmanager.unload(kbname)
+        self.asset_manger.drop(kbname)
+        pass
     
     

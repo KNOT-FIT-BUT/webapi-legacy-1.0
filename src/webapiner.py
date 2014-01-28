@@ -5,6 +5,7 @@ from core.REST import RESTService
 from core.web import Root
 from core import Core
 
+from core.managers._assets import AssetsManager
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -36,10 +37,9 @@ def main():
     with open("webapiner.pid","w") as f:
         f.write(str(os.getpid()))
     
-    
-    cherrypy.engine.subscribe("stop", core.getManager("kb").stop)
-    core.getManager("kb").start()
-    core.getManager("kb").autoload()
+    cherrypy.engine.subscribe("stop", core.getManager("asset").stop)
+    core.getManager("asset").start()
+    #core.getManager("kb").autoload()
     cherrypy.quickstart(Root(core), config = conf)
 
     

@@ -27,9 +27,10 @@ class KBManager(threading.Thread):
         self.base_folder = base_folder
         self.kb_folder = os.path.join(base_folder, kb_relative)
         self.kb_list = {}
-        self.kb_online = []
+        
         self.do = threading.Event()
         self.quit = threading.Event()
+        self.kb_online = []
         self.load_qeue = deque()
         self.kb_factory = KBFactory(base_folder, kb_relative)
         self.__loadKBListFromFolder()
