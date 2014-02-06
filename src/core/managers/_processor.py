@@ -31,6 +31,7 @@ class ProcesssorManager(object):
         '''
         result = None
         if fsa is not None:
+            
             result = self.__FIGArecpgnizer(text, kb, fsa)
         else:
             result = self.__NERrecognizer(text, kb)
@@ -85,7 +86,7 @@ class ProcesssorManager(object):
                     
     
                 result_kb.append({
-                                  "kb_data":kb_data,
+                                  "kb_row":kb_data,
                                   "items":data
                                   })
 
@@ -120,7 +121,10 @@ class ProcesssorManager(object):
         entities = []
         for line in output.split("\n")[:-1]:
             se = SimpleEntity(line,kb)
-            entities.append(se)
+            if se.preferred_sense is not None:
+                entities.append(se)
+                print se.source, se.senses
+                
         
         if len(entities) > 0:
             new_entities = [entities[0]]
@@ -195,7 +199,7 @@ class SimpleEntity():
         self.source = re.sub("&#x([A-F0-9]{2})([A-F0-9]{2})([A-F0-9]{2})([A-F0-9]{2})([A-F0-9]{2})([A-F0-9]{2});","\\x\g<1>\\x\g<2>\\x\g<3>\\x\g<4>\\x\g<5>\\x\g<6>", self.source)
         self.source = eval("\"" + self.source + "\"")
         self.kb = kb
-        self.preferred_sense = self.senses[0]
+        self.preferred_sense = self.senses[0] if len(self.senses)> 0 else None
         
     
     def mutual_position (self, begin_offset, end_offset):

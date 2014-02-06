@@ -91,6 +91,7 @@ class KnowledgeBaseAdapter(object):
         '''
         @return - True if KB is marked for autoload at program startup.
         '''
+        print self.conf
         if self.conf is not None and "preload" in self.conf.keys():
             return self.conf["preload"]
         else:

@@ -60,10 +60,10 @@ class AssetsManager(Thread):
             
             if kb is not None:
                 self.kb_list[asset_name] = kb
-                print "kb",kb.kb_path
+                #print "kb",kb.kb_path
             if fsa is not None:
                 self.fsa_list[asset_name] = fsa
-                print "fsa", fsa.fsa_path
+                #print "fsa", fsa.fsa_path
         except IOError:
             pass
         except TypeError:
@@ -114,6 +114,7 @@ class AssetsManager(Thread):
         self.loadFromFolder(self.asset_folder)
         self.quit.clear()
         self.do.clear()
+        self.autoload()
         while not self.quit.isSet():
             if self.do.isSet():
                 while len(self.load_qeue) > 0:
@@ -161,10 +162,17 @@ class AssetsManager(Thread):
         '''
         
         out = []
-        for kbname, kb in self.kb_list.iteritems():
-            data = kb.get_stats()
-            data["name"] = kbname
-            out.append(data)
+        if asset is None:
+            for kbname, kb in self.kb_list.iteritems():
+                data = kb.get_stats()
+                data["name"] = kbname
+                out.append(data)
+        elif asset == "ner":
+            for kbname, kb in self.kb_list.iteritems():
+                if "ner" in kb.conf["processor"]:
+                    data = kb.get_stats()
+                    data["name"] = kbname
+                    out.append(data)
         return out
         
     
@@ -200,5 +208,13 @@ class AssetsManager(Thread):
         data = json.loads(f.read())
         f.close()
         return data
+    
+    def autoload(self):
+        '''
+        Add all KB marked for autoload to load queue.
+        '''
+        for kb_name in self.kb_list.keys():
+            if self.kb_list[kb_name].preload():
+                self.loadKB(kb_name);
     
     

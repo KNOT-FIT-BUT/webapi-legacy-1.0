@@ -33,7 +33,7 @@ class NERHandler():
         '''
         On GET return info about all available KB.
         '''
-        kblist = self.asset_manger.getStatus()
+        kblist = self.asset_manger.getStatus("ner")
         result = []
         for kb in kblist:
             #if kb["processor"] == "ner":

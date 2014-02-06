@@ -44,11 +44,11 @@ KBManager.prototype.init = function(){
 			this.tbody
 			
 		),
-		this.pbarblock,
-		$(document.createElement("div")).addClass("text-right").append(
+		this.pbarblock
+		/*$(document.createElement("div")).addClass("text-right").append(
 			    "Reload from disk: ",
 				this.refresh_icon.click($.proxy(this.reload, this))
-		)
+		)*/
 		
 		);
 	this.repeater();

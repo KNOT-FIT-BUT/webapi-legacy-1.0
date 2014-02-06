@@ -7,6 +7,9 @@ cd $SCRIPT_PATH
 
 cd sec
 printf "%-50s" "Updating repository..."
+#git pull
+git reset --hard HEAD
+git clean -f -d
 git pull
 
 if [ $? -ne 0 ]; then
@@ -36,8 +39,15 @@ else
  printf "%s\n" "Skipped!"
 fi
 
+
 printf "%-50s" "Copying new NER to api folder..."
  cp -r $SCRIPT_PATH/sec/NER $SCRIPT_PATH/src/api/NER
+printf "%s\n" "Done!"
+
+cd $SCRIPT_PATH/src/api/NER
+
+printf "%-50s\n"  "Downloading KB's and automats..."
+sh downloadKB.sh
 printf "%s\n" "Done!"
 
 cd $SCRIPT_PATH

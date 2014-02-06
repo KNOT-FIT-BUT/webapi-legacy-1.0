@@ -55,7 +55,7 @@ class KBHandler():
         Add KB to unload queue.
         @kbname - KB filename without extension.
         '''
-        self.asset_manger.drop(kbname)
+        self.asset_manger.dropKB(kbname)
         pass
     
     

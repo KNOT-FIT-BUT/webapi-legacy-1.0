@@ -47,7 +47,7 @@ function GUICore(){
   //localStorage.removeItem("colors");
   if(localStorage["colors"] != null){
   	  this.colors = JSON.parse(localStorage["colors"]);
-  	  console.log(this.colors);
+  	  //console.log(this.colors);
   }else{
 	  this.colors = {"a":"#00CC00","p":"#00CC00","l":"#667cff","w":"#ff9e00","c":"#ff5ce1",
 				   "e":"#b0bfd2","f":"#9666ff","d":"#ffd792","m":"#bf0000",
@@ -101,18 +101,33 @@ GUICore.prototype.outputGenerator = function(raw_data){
     this.gbRR.clear();
     this.gbRV.clear();
     	
-    
+    var fields = ["preferred term","name","display term"];
 	for(var i in data){
+		var haveTextCol = false;
 		var item = data[i];
-		if(item.hasOwnProperty("kb_data")){
-			kbID = item.kb_data.id.replace(":","-");
+		if(item.hasOwnProperty("kb_row")){
+			kbID = item.kb_row.id.replace(":","-");
 			var iitems = item.items;
 			for(var d in iitems){
 				var i = iitems[d];
 				i.push(kbID);
 				this.item_list.push(i);
 			}
-			this.kb_data[kbID] = item.kb_data;
+			
+		
+			for(var i in fields){
+				if(item.kb_row[fields[i]] != "" && item.kb_row[fields[i]] != undefined){
+					haveTextCol = true;
+					break;
+				}
+			}
+			console.log(haveTextCol);
+			if(haveTextCol == false){
+				item.kb_row["hidden text"] = iitems[0][2];
+				console.log(item.kb_row);
+			}
+			
+			this.kb_data[kbID] = item.kb_row;
 			
 		}else if (item.hasOwnProperty("dates")){
 			dateList = item["dates"];

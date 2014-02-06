@@ -32,7 +32,8 @@ def main():
 
     Root._cp_config = {'tools.staticdir.on' : True,
                   'tools.staticdir.dir' : os.path.join(current_dir, "static"),
-                  'tools.staticdir.index' : 'index.html',}
+                  'tools.staticdir.index' : 'index.html',
+                  'tools.caching.on' :False}
 
     with open("webapiner.pid","w") as f:
         f.write(str(os.getpid()))

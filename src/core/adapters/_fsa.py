@@ -14,7 +14,7 @@ class FSA():
         print self.fsa_path
         dictionary = figa.myList()
         lang_file = None
-        dictionary.insert("/home/casey/workspace/webapiner2/src/api/NER/figav08/automata.fsa")
+        dictionary.insert(self.fsa_path.encode("utf-8"))
         seek_names = figa.marker(dictionary, lang_file)
         output = seek_names.lookup_string(text)
         return output 

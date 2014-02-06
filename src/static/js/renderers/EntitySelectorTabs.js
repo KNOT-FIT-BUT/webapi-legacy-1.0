@@ -40,7 +40,7 @@ EntityTab.prototype.setColors  = function(colors){
 EntityTab.prototype.generateTabs = function(prefix_desc){
 	
 	var first_tag = (prefix_desc == undefined || prefix_desc == null) ? "undf" : "ALL";
-	console.log(first_tag);
+	//console.log(first_tag);
 
 	var item = $(document.createElement("li"));
 	item.addClass("active").attr("id","estt-"+first_tag).append(
@@ -167,18 +167,24 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 			prefix = i_id.charAt(0);
 			prefix_cnt[prefix]++;
 			prefix_cnt[first_tag]++;
-			if(prefix == "a" ){
+			/*if(prefix == "a" ){
 				i_data = kb_row["preferred term"];
-
-				if(i_data == ""){
+				console.log(i_data);
+				if(i_data == "" || i_data == undefined){
 					i_data = kb_row["name"];
 				}
+				console.log(i_data);
+				if(i_data == "" || i_data == undefined){
+					i_data = kb_row["display term"];
+				}
+				console.log(i_data);
 			}else if(prefix == "s" || prefix == "t"){
 				i_data = kb_row['name'];
 				
 			}else{
 				i_data = kb_row['name'];
-			}
+			}*/
+			i_data = this.getBestTextField(kb_row);
 			divlist[prefix].find(".results").append($(document.createElement('li')).addClass(ci_id).text(i_data).click(this.callback));
 			divlist[first_tag].find(".results").append($(document.createElement('li')).addClass(ci_id).text(i_data).click(this.callback));
 		}else{
@@ -192,12 +198,26 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 		
 	}
 	
-	
-
 		this.hideEmptyTabs(prefix_cnt);	
 
 };
 
+EntityTab.prototype.getBestTextField = function(kb_item){
+	var fields = ["preferred term","name","display term","hidden text"];
+	var field = "";
+	var text = "";
+	for(var i in fields){
+		field = fields[i];
+		if(kb_item[field] != "" && kb_item[field] != undefined){
+			text = kb_item[field];
+			break;
+		}
+	}
+	
+	return text;
+	
+
+};
 
 
 EntityTab.prototype.KBserializeAndsort = function(kb_data){
@@ -205,6 +225,7 @@ EntityTab.prototype.KBserializeAndsort = function(kb_data){
 	var s_kb_data = new Array();
 	var s_dates = new Array();
 	var s_intervals = new Array();
+	var self = this;
 	
 	for(var i in kb_data){
 		var kb_row = kb_data[i];
@@ -220,14 +241,16 @@ EntityTab.prototype.KBserializeAndsort = function(kb_data){
 	}
 	
 	s_kb_data.sort(function(a,b){
-		var sa = a["name"];
+		/*var sa = a["name"];
 		var sb = b["name"];
 		if(a["id"].charAt(0) == "a"){
 			sa = a["preferred term"];
 		}
 		if(b["id"].charAt(0) == "a"){
 			sb = b["preferred term"];
-		}
+		}*/
+		var sa = self.getBestTextField(a);
+		var sb = self.getBestTextField(b);
 		var upA = sa.toUpperCase();
     	var upB = sb.toUpperCase();
     	return (upA < upB) ? -1 : (upA > upB) ? 1 : 0;
@@ -265,7 +288,7 @@ EntityTab.prototype.hideEmptyTabs = function(data){
 	var total = 0;
 	
 	for(e in data){
-		console.log([e,data[e]]);
+		//console.log([e,data[e]]);
 		if(data[e] == 0){
 			$("#estt-"+e).hide();
 		}else{

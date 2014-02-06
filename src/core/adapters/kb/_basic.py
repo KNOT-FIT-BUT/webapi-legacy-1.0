@@ -52,14 +52,15 @@ class KB_Basic(KnowledgeBaseAdapter):
     def get_field(self, line, column):
         """Returns a column of a line in the knowledge base"""
         #KB lines are indexed from one
-        return self.lines[int(line) - 1][column]
+        print int(line) - 1, column
+        return self.lines[int(line) - 1][column] if (self.items_number >= int(line)) else ""
     
     
     def get_row(self, line):
         '''
         @return - list of KB row data
         '''
-        return self.lines[int(line) -1 ]
+        return self.lines[int(line) -1]
     
     def get_full_row(self, line):
         pass
