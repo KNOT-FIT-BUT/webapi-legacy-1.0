@@ -78,7 +78,8 @@ GUICore.prototype.onAnnotate = function(){
   			url: url,  
   			data: {"text":text},
   			dataType: 'json',
-  			success: $.proxy(this.outputGenerator,this)
+  			success: $.proxy(this.outputGenerator,this),
+  			error:AjaxErrorHandler
 		});
 	
 };
@@ -96,17 +97,32 @@ GUICore.prototype.outputGenerator = function(raw_data){
 	this.item_list = [];
 	this.kb_data = [];
 	
+	if(raw_data["header"]["status"] != 0){
+		ServerErrorHandler(raw_data["header"]["msg"]);
+		return;
+	}
+	
 	data = raw_data["result"];
   
     this.gbRR.clear();
     this.gbRV.clear();
+    this.gEntityTab.clear();
+    this.gEntityInfo.clear();
+    this.gCarousel.clear();
     	
     var fields = ["preferred term","name","display term"];
 	for(var i in data){
 		var haveTextCol = false;
 		var item = data[i];
+		var kb_row;
 		if(item.hasOwnProperty("kb_row")){
-			kbID = item.kb_row.id.replace(":","-");
+			if(Array.isArray(item.kb_row)){
+				kb_row = item.kb_row[0];
+			}else{
+				kb_row = item.kb_row;
+			}
+			
+			kbID = kb_row.id.replace(":","-");
 			var iitems = item.items;
 			for(var d in iitems){
 				var i = iitems[d];
@@ -116,7 +132,7 @@ GUICore.prototype.outputGenerator = function(raw_data){
 			
 		
 			for(var i in fields){
-				if(item.kb_row[fields[i]] != "" && item.kb_row[fields[i]] != undefined){
+				if(kb_row[fields[i]] != "" && kb_row[fields[i]] != undefined){
 					haveTextCol = true;
 					break;
 				}
@@ -124,7 +140,7 @@ GUICore.prototype.outputGenerator = function(raw_data){
 			console.log(haveTextCol);
 			if(haveTextCol == false){
 				item.kb_row["hidden text"] = iitems[0][2];
-				console.log(item.kb_row);
+				//console.log(item.kb_row);
 			}
 			
 			this.kb_data[kbID] = item.kb_row;
@@ -246,6 +262,38 @@ GUICore.prototype.onEntitySelect = function(group_id){
 };
 
 
+function AjaxErrorHandler(xhr, status, error){
+	var errorMessage;
+	if(xhr.status == 500){
+		errorMessage = "An server error occurred with HTML code 500 (Interal Server Error).<br/>Visit server log for more information.";
+	}else if(xhr.status == 404){
+		errorMessage = "Requested data not found. Try refresh gui and check if server is running.";
+	}else{
+		errorMessage = "An unknow error occurred. <br/>HTML Status:" + xhr.status + "<br/>Status: " + status + "<br/>HTML Error Message: " + error;
+		errorMessage += "<br/>Check if server is running and check server log for more information<br/>";
+	}
+	
+	var modalcontent = $("#modalContent");
+	modalcontent.empty();
+	modalcontent.append(formatError(errorMessage));
+	$("#modalDialog").modal('show');
+};
 
+function ServerErrorHandler(msg_list){
+	var modalcontent = $("#modalContent");
+	modalcontent.empty();
+	for(var i in msg_list){
+		modalcontent.append(formatError(msg_list[i]));
+	}
+	$("#modalDialog").modal('show');
+}
+
+function formatError(msg){
+	return $(document.createElement("div")).addClass("alert alert-error").append(
+		$(document.createElement("strong")).text("WARNING!"),
+		$(document.createElement("br")),
+		msg
+	);
+}
 
 

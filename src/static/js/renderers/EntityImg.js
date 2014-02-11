@@ -32,14 +32,14 @@ EntityImg.prototype.init = function(){
 EntityImg.prototype.clear = function(){
 	this.car_indicators.empty();
 	this.car_items.empty();
-
+	this.mc.hide();
 };
 
 
 EntityImg.prototype.update = function(kb_row){
 	this.mc.carousel('pause');
 	this.clear();
-	this.mc.hide();
+	
 	var data_slide_cnt = 0;
 	var isFirst = true;
 	if(kb_row.hasOwnProperty("image")){

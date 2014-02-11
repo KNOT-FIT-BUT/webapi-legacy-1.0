@@ -17,12 +17,19 @@ class ProcesssorManager(object):
     '''
 
 
-    def __init__(self):
+    def __init__(self, base_folder):
         '''
         Constructor
         '''
         self.__column_enh = {"s":"Dates", "t":"Intervals"}
-        
+        self.base_folder = base_folder
+        self.features_code = {}
+        with open(os.path.join(base_folder,"api","NER","geoData.all"),"r") as f:
+            data = f.read()
+        for row in data.split("\n"):
+            items = row.split("\t")
+            if len(items) >=2:
+                self.features_code[items[0]] = items[1]
         
     def recognize(self, text, kb, fsa=None):
         '''
@@ -30,24 +37,26 @@ class ProcesssorManager(object):
         @return - data JSON of parsed text. 
         '''
         result = None
+        include_all_senses = False
         if fsa is not None:
             
             result = self.__FIGArecpgnizer(text, kb, fsa)
+            include_all_senses = True
         else:
             result = self.__NERrecognizer(text, kb)
         
-        return self.bake_output(result, kb)
+        return self.bake_output(result, kb,include_all_senses)
             
     
     
     
-    def bake_output(self, proc_res, kb):
+    def bake_output(self, proc_res, kb, include_all_senses = False):
         '''
         Bake output with KB config and KB data. Pair KB column names from KB config and row data from KB.
         @proc_res - raw data from processing tools
         @kb - instance of KB class
         '''
-        result = self.groupResultItems(proc_res)
+        result = self.groupResultItems(proc_res,include_all_senses)
         splitter = kb.conf["value_splitter"] if kb.conf["value_splitter"] is not None else ""
         splitter = splitter.encode("utf-8")
         result_kb = []
@@ -55,38 +64,19 @@ class ProcesssorManager(object):
             if str(key) in ["dates", "intervals"]:
                 result_kb.append({key:data})
             else:
-                item_type = kb.get_field(key, 0)[0]
-                kb_data = OrderedDict()
-                if item_type in kb.columns:
-                    columns = kb.columns[item_type]
-                else:
-                    columns = kb.columns["col"]
                 
-                for a in range(len(columns)):
-                    colname = columns[a];
-                    field_data = kb.get_field(key,a)
-                    if colname.startswith('*'):
-                        if colname == "*image":
-                            fdata = field_data.split(splitter)
-                            try:
-                                il = iter(fdata)
-                                field_data = []
-                                while True:
-                                    item = il.next()
-                                    if len(item) != 11:
-                                        item = "".join([item,'_',il.next()])
-                                    field_data.append(item)
-                            except StopIteration:
-                                pass
-                                
-                        else:
-                            field_data = field_data.split(splitter) if len(field_data) > 0 else ""
-                        colname = colname[1:]
-                    kb_data[colname] = field_data
+                if(include_all_senses):
+                    senses = data[0][-1]
+                    [item.pop() for item in data]
+                    
+                    kb_row = [self.__bakeKBrow(sense,kb, splitter) for sense in senses]
+                    kb_row = kb_row if len(kb_row) > 1 else kb_row[0]
+                else:
+                    kb_row = self.__bakeKBrow(key, kb, splitter)
                     
     
                 result_kb.append({
-                                  "kb_row":kb_data,
+                                  "kb_row":kb_row,
                                   "items":data
                                   })
 
@@ -99,6 +89,27 @@ class ProcesssorManager(object):
                 "result":result_kb
                 }
         
+    def __bakeKBrow(self, key, kb, splitter):
+        kb_data = OrderedDict()
+        item_type = kb.get_field(key, 0)[0]
+        
+        if item_type in kb.columns:
+            columns = kb.columns[item_type]
+        else:
+            columns = kb.columns["col"]
+        
+        for a in range(len(columns)):
+                colname = columns[a];
+                field_data = kb.get_field(key,a)
+                if colname.startswith('*'):
+                    field_data = field_data.split(splitter) if len(field_data) > 0 else ""
+                    colname = colname[1:]
+                elif colname == "feature code":
+                    field_data = [field_data, self.features_code[field_data]] if field_data in self.features_code else field_data
+                kb_data[colname] = field_data
+                
+                    
+        return kb_data 
     
     def __NERrecognizer(self, text, kb):
         '''
@@ -123,7 +134,7 @@ class ProcesssorManager(object):
             se = SimpleEntity(line,kb)
             if se.preferred_sense is not None:
                 entities.append(se)
-                print se.source, se.senses
+                #print se.source, se.senses
                 
         
         if len(entities) > 0:
@@ -137,7 +148,7 @@ class ProcesssorManager(object):
         
         return entities
         
-    def groupResultItems(self, result):
+    def groupResultItems(self, result, include_all_senses=False):
         '''
         Group the same entities items into one container - saving bandwith data.
         '''
@@ -156,6 +167,8 @@ class ProcesssorManager(object):
                 if item.preferred_sense:
                     item_id = item.preferred_sense
                     item_data = [item.begin, item.end, item.source]
+                    if include_all_senses:
+                        item_data.append(item.senses)
                 else:
                     continue
                 

@@ -229,6 +229,10 @@ EntityTab.prototype.KBserializeAndsort = function(kb_data){
 	
 	for(var i in kb_data){
 		var kb_row = kb_data[i];
+		if(Array.isArray(kb_row)){
+			kb_row = kb_data[i][0];	
+		}
+		
 		var i_id = kb_row["id"];
 		prefix = i_id.charAt(0);
 		if(prefix == "s"){

@@ -96,7 +96,9 @@ Input.prototype.refresh = function(){
   			url: "/parser/testFilesList/",  
   			data: "",
   			dataType: 'json',
-  			success: $.proxy(this.success,this)
+  			success: $.proxy(this.success,this),
+  			error:AjaxErrorHandler
+  			
 		});
 		
 	};
@@ -115,7 +117,8 @@ Input.prototype.loadText = function(event){
 		  success: function(data){
 				texarea.val(data);		
 					  	
-		  }
+		  },
+		  error:AjaxErrorHandler
 		});
 
 	}

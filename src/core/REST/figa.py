@@ -50,11 +50,12 @@ class FigaHandler():
         txt = kw.get("text")
         kb_name = flags[0] if len(flags) > 0 else None
         error_msg = []
+        
         if txt is None:
             error_msg.append("No input text specified or wrong parameter. Use ?text=")
         if kb_name is None:
             error_msg.append("No Knowledge Base / FSA specified!")
-        if len(flags) > 0:
+        if len(flags) > 0 and len(error_msg) == 0:
             kb, fsa = self.asset_manger.getAsset(flags[0])
             if fsa is None:
                 error_msg.append("Cant find FSA: " + flags[0])

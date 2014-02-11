@@ -56,7 +56,7 @@ class NERHandler():
             error_msg.append("No input text specified or wrong parameter. Use ?text=")
         if kb_name is None:
             error_msg.append("No Knowledge Base specified!")
-        if len(flags) > 0:
+        if len(flags) > 0 and len(error_msg) == 0:
             kb = self.asset_manger.getAsset(flags[0],"kb")
             if kb is None:
                 error_msg.append("Cant find Knowledge base: " + flags[0])
@@ -64,11 +64,11 @@ class NERHandler():
                 error_msg.append("Knowledge base is not loaded! - : " + flags[0])
             else:
                 return self.proc_manager.recognize(txt.encode("utf-8"), kb, None)
-
+        
         return {"header":{"status":1,
                             "msg":error_msg  },
                 }
-        
+            
     
     def PUT(self):
         pass

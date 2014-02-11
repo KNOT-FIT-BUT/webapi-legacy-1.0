@@ -39,7 +39,7 @@ class Core(object):
         '''
         #self.addManager("kb", KBManager(self.base_folder, self.kb_folder))
         #self.addManager("fsa", FSAManager(self.base_folder, self.fsa_folder))
-        self.addManager("proc", ProcesssorManager())
+        self.addManager("proc", ProcesssorManager(self.base_folder))
         self.addManager("asset", AssetsManager(self.base_folder, self.asset_folder))
 
 
