@@ -11,7 +11,7 @@ class FSA():
         
         
     def recognize(self, text):
-        print self.fsa_path
+        #print self.fsa_path
         dictionary = figa.myList()
         lang_file = None
         dictionary.insert(self.fsa_path.encode("utf-8"))
