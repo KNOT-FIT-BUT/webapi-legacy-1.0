@@ -3,14 +3,14 @@ function ResultVisual(){
 	this.cnt_id = null;
 	this.container = null;
 	this.legend="Visual";
-	this.mc = $(document.createElement("pre"));
-	
+	this.mc = $(document.createElement("pre")).attr("id","preVisual");
+	this.save_icon = $(document.createElement("i")).addClass("icon-download-alt").attr("id","saveIcon").click($.proxy(this.onSave,this));
 	this.colors = {};
 				
 	this.offset = $(document.createElement("b"));
 	this.offset.text("0");
 	this.callback = new function(){};
-	
+	this.save_callback = new function(){};
 
 };
 	
@@ -23,7 +23,9 @@ ResultVisual.prototype.init = function(cnt_id){
 	this.container = $(cnt_id);
 	this.container.append(
 			$(document.createElement("div")).addClass("text-right").append(
-				"Cursor offset:",
+				"Save: ",
+				this.save_icon,
+				" || Cursor offset:",
 				this.offset
 				
 			),
@@ -34,6 +36,9 @@ ResultVisual.prototype.init = function(cnt_id){
 		
 };
 
+ResultVisual.prototype.onSave = function(col){
+	this.save_callback();
+};
 	
 ResultVisual.prototype.clear = function(){
 	this.mc.empty();
@@ -45,6 +50,11 @@ ResultVisual.prototype.setColors = function(col){
 
 ResultVisual.prototype.registerOnSelectCallback = function(fnc){
 	this.callback = fnc;
+	
+};
+
+ResultVisual.prototype.registerOnSaveCallback = function(fnc){
+	this.save_callback = fnc;
 	
 };
 
@@ -61,6 +71,7 @@ ResultVisual.prototype.update = function(text_original, item_list){
 		var i_start = item_list[i][0];
 		var i_stop = item_list[i][1];
 		var i_data = item_list[i][2];
+		var coref = item_list[i][3];
 		
 		var i_id = item_list[i][item_list[i].length - 1];
 		var prefix = i_id.charAt(0);
@@ -72,7 +83,11 @@ ResultVisual.prototype.update = function(text_original, item_list){
 		t_stop = i_start;
 		
 		this.mc.append($(document.createElement('span')).text(t_in.substring(t_start, t_stop)).attr('data-start',t_start));
-		this.mc.append($(document.createElement('strong')).text(i_data).addClass(prefix).addClass(i_id).attr('data-start',t_stop).click(this.callback));//.css("color",color));
+		var entity = $(document.createElement('strong')).text(i_data).addClass(prefix).addClass(i_id).attr('data-start',t_stop).click(this.callback);
+		if(coref == true){
+			entity.addClass("coref");
+		}
+		this.mc.append(entity);//.css("color",color));
 		t_start = i_stop;
 	}
 	this.mc.append($(document.createElement('span')).text(t_in.substring(t_start)).attr('data-start',t_start));
@@ -88,7 +103,7 @@ ResultVisual.prototype.setCursorOffset = function(event){
 	var selection = window.getSelection();
     var offset = parseInt($(element).attr('data-start'));
     this.offset.text(offset + selection.focusOffset);
-
+	event.stopPropagation();
 };
 
 ResultVisual.prototype.focusEntity = function(group_id){

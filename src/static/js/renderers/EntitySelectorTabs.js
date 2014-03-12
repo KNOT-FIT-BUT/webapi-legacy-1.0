@@ -1,16 +1,17 @@
-function EntityTab(cnt_id){
+function EntityTab(cnt_id, settings){
 
 	this.cnt_id = cnt_id;
 	this.container = $(cnt_id);
 	this.legend="Entity list";
 	this.tab_list = null;
 	this.tab_content = null;
-	this.tab_content_named = new Array();
+	this.tab_content_named = {};
 	this.callback = new function(){};
 	this.color_callback = new function(){};
 	this.tab_cnt = 1;
 	this.colors = {};
-
+	this.color_picker_enabled = settings["entity_select_color_btn"];
+	this.color_buttons = {};
 };
 	
 EntityTab.prototype.init = function(){
@@ -71,7 +72,9 @@ EntityTab.prototype.generateTabs = function(prefix_desc){
 						var id = $(ev.target).attr("data-group");
 						ccalbck(id,ev.color.toHex());
 					});
-			
+			if(this.color_picker_enabled == false){
+				btn.hide();
+			}
 			datadiv = $(document.createElement("div")).attr("id","est_filter-"+e).addClass("tab-pane").append(
 				$(document.createElement("div")).addClass("centered").append(
 					btn
@@ -92,6 +95,9 @@ EntityTab.prototype.generateTabs = function(prefix_desc){
 						var id = $(ev.target).attr("data-group");
 						ccalbck(id,ev.color.toHex());
 					});
+		if(this.color_picker_enabled == false){
+				btn.hide();
+		}
 		datadiv.prepend(
 			$(document.createElement("div")).addClass("centered").append(
 						btn
@@ -118,23 +124,25 @@ EntityTab.prototype.focusEntity = function(ent_id){
 
 	
 	var div;
+	//console.log(this.tab_content_named["undf"]);
 	if(this.tab_cnt == 1){
 		div = this.tab_content_named["undf"];
 	}else{
 		var prefix = ent_id.split("-")[0];
-		//alert(prefix);
+	
 		div = this.tab_content_named[prefix];
 		this.tab_list.find('a[href="#est_filter-'+prefix+'"]').tab('show');
 	}
 	
-		
-	div.children().first().animate({
-        scrollTop: div.children().first().offset().top
-    }, 0);
-
-	div.children().first().animate({
-    	scrollTop: div.find('li.'+ent_id).offset().top
-    }, 0);
+    if(div != undefined){		
+		div.children().eq(1).animate({
+	        scrollTop: div.children().eq(1).offset().top
+	    }, 0);
+	
+		div.children().eq(1).animate({
+	    	scrollTop: div.find('li.'+ent_id).offset().top
+	    }, 0);
+    }
 };
 
 
@@ -184,11 +192,11 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 			}else{
 				i_data = kb_row['name'];
 			}*/
-			i_data = this.getBestTextField(kb_row);
+			i_data = this.getBestTextField(kb_row, true);
 			divlist[prefix].find(".results").append($(document.createElement('li')).addClass(ci_id).text(i_data).click(this.callback));
 			divlist[first_tag].find(".results").append($(document.createElement('li')).addClass(ci_id).text(i_data).click(this.callback));
 		}else{
-		    i_data = kb_row["name"];	
+		    i_data = this.getBestTextField(kb_row, true);	
 			divlist[first_tag].find(".results").append($(document.createElement('li')).addClass(ci_id).text(i_data).click(this.callback));
 			prefix_cnt[first_tag]++;
 
@@ -202,8 +210,8 @@ EntityTab.prototype.update = function(prefix_desc, kb_data){
 
 };
 
-EntityTab.prototype.getBestTextField = function(kb_item){
-	var fields = ["preferred term","name","display term","hidden text"];
+EntityTab.prototype.getBestTextField = function(kb_item, show_count){
+	var fields = ["hidden text","preferred term","name","display term"];
 	var field = "";
 	var text = "";
 	for(var i in fields){
@@ -213,7 +221,10 @@ EntityTab.prototype.getBestTextField = function(kb_item){
 			break;
 		}
 	}
-	
+	if(show_count == true && kb_item.hasOwnProperty("hidden rows")){
+		text = text + " (" + kb_item["hidden rows"] + ")";
+		//console.log(text);
+	}
 	return text;
 	
 
@@ -231,6 +242,8 @@ EntityTab.prototype.KBserializeAndsort = function(kb_data){
 		var kb_row = kb_data[i];
 		if(Array.isArray(kb_row)){
 			kb_row = kb_data[i][0];	
+			kb_row["hidden rows"] = kb_data[i].length;
+			
 		}
 		
 		var i_id = kb_row["id"];
@@ -253,8 +266,8 @@ EntityTab.prototype.KBserializeAndsort = function(kb_data){
 		if(b["id"].charAt(0) == "a"){
 			sb = b["preferred term"];
 		}*/
-		var sa = self.getBestTextField(a);
-		var sb = self.getBestTextField(b);
+		var sa = self.getBestTextField(a, false);
+		var sb = self.getBestTextField(b, false);
 		var upA = sa.toUpperCase();
     	var upB = sb.toUpperCase();
     	return (upA < upB) ? -1 : (upA > upB) ? 1 : 0;

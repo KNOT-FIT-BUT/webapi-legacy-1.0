@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 23. 10. 2013
 
@@ -47,7 +48,7 @@ class FigaHandler():
         '''
         Performin text parsing via figa tool.
         '''
-        txt = kw.get("text")
+        txt = kw.get("text").replace("–","-").replace("“",'"').replace("”",'"')
         kb_name = flags[0] if len(flags) > 0 else None
         error_msg = []
         
@@ -64,6 +65,7 @@ class FigaHandler():
             elif kb.status < 4:
                 error_msg.append("Knowledge base is not loaded! - : " + flags[0])
             else:
+                txt = txt+"\n" if not txt.endswith("\n") else txt
                 return self.proc_manager.recognize(txt.encode("utf-8"), kb, fsa)
             #result = recognize(kb, txt.encode("utf-8"), False, False)
             #rg =  parse_result(result, kb, 'classic')

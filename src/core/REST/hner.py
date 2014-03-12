@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 28. 10. 2013
 
@@ -48,8 +49,8 @@ class NERHandler():
         '''
         Paring text via NER tool.
         @return - data JSON to client.
-        '''
-        txt = kw.get("text")
+         '''
+        txt = kw.get("text").replace(u"–",u"-").replace(u"“",u'"').replace(u"”",u'"')
         kb_name = flags[0] if len(flags) > 0 else None
         error_msg = []
         if txt is None:
@@ -63,6 +64,7 @@ class NERHandler():
             elif kb.status < 4:
                 error_msg.append("Knowledge base is not loaded! - : " + flags[0])
             else:
+                txt = txt+"\n" if not txt.endswith("\n") else txt
                 return self.proc_manager.recognize(txt.encode("utf-8"), kb, None)
         
         return {"header":{"status":1,

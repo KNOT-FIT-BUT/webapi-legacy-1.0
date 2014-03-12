@@ -1,5 +1,5 @@
 
-function Input(cnt_id){
+function Input(cnt_id, settings){
 	
 
 	this.container_sel = cnt_id;
@@ -11,7 +11,7 @@ function Input(cnt_id){
 				"placeholder":"Enter text here...","id":"textinput","name":"inputbox"});
 	this.offset = $(document.createElement("b")).text("0").attr("id","originaloffset");
 	this.filelist = $(document.createElement("ul")).attr({"class":"dropdown-menu","id":"fileList"});
-	
+	this.preload = settings["input_text_file"];
 };
 
 Input.prototype.init = function(){
@@ -73,40 +73,50 @@ Input.prototype.getInputText = function(){
 	
 		
 Input.prototype.success = function(data){
-		$("#l1").css("display", "none"); 
-		$("#fileList").append(
-			$(document.createElement('li')).append(
-				$(document.createElement('a')).text(data[i]).attr({"id":data[i],"href":"#"})
-			)
-		);
-  		for(var i in data){
-	  		$("#fileList").append(
-	  			$(document.createElement('li')).append(
-	  				$(document.createElement('a')).text(data[i]).attr({"id":data[i],"href":"#"}).click($.proxy(this.loadText,this))
-	  			)
-	  		);
-  		}
-	};
+	$("#l1").css("display", "none"); 
+	$("#fileList").append(
+		$(document.createElement('li')).append(
+			$(document.createElement('a')).text(data[i]).attr({"id":data[i],"href":"#"})
+		)
+	);
+	for(var i in data){
+  		$("#fileList").append(
+  			$(document.createElement('li')).append(
+  				$(document.createElement('a')).text(data[i]).attr({"id":data[i],"href":"#"}).click($.proxy(this.loadText,this))
+  			)
+  		);
+	}
+	//console.log(this.preload);
+	//console.log($.inArray(this.preload, data) > -1);
+	//console.log(data);
+	if($.inArray(this.preload, data) > -1){
+		this.loadTextFilename(this.preload);
+	};	
+};
 	
 Input.prototype.error = function(){};
 	
 Input.prototype.refresh = function(){
-		$.ajax({  
-  			type: "POST",  
-  			url: "/parser/testFilesList/",  
-  			data: "",
-  			dataType: 'json',
-  			success: $.proxy(this.success,this),
-  			error:AjaxErrorHandler
-  			
-		});
+	$.ajax({  
+		type: "POST",  
+		url: "/parser/testFilesList/",  
+		data: "",
+		dataType: 'json',
+		success: $.proxy(this.success,this),
+		error:AjaxErrorHandler
 		
-	};
+	});
+		
+};
 	
 Input.prototype.loadText = function(event){
 	var element = event.target;
-	var texarea = this.textarea;
 	filename = $(element).attr("id");
+	this.loadTextFilename(filename);
+};
+
+Input.prototype.loadTextFilename = function(filename){
+	var texarea = this.textarea;
 	if(filename == ""){
 		this.textarea.val("");
 	}else{

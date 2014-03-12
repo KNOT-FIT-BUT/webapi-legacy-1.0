@@ -1,3 +1,10 @@
+var settings = {
+	"input_text_file":"example_input2",
+	"entity_select_color_btn":false,
+	//"settings_color_select":true,
+	
+		
+};
 var core;
 
 $(document).ready(
@@ -9,9 +16,10 @@ function() {
 function GUICore(){
   this.gKBManager = new KBManager("#kbmanagerblock");
   this.gAPI = new APISwitches("#apiswitches");
-  this.gInput = new Input("#inputblock");
+  this.gColorManager = new ColorManager("#colormanagerblock");
+  this.gInput = new Input("#inputblock", settings);
   
-  this.gEntityTab = new EntityTab("#EntityTabContainer");
+  this.gEntityTab = new EntityTab("#EntityTabContainer", settings);
   this.gOutputTab = new OutputTabs("#OutputTabContainer");
   this.gEntityInfo = new EntityInfo("#EntityInfoContainer");
   this.gCarousel = new EntityImg("#EntityTabContainer");
@@ -21,27 +29,34 @@ function GUICore(){
   
   
   
+  
   this.gKBManager.init();
   this.gAPI.init();
+  this.gColorManager.init();
   this.gInput.init();
   this.gEntityTab.init();
   this.gOutputTab.init();
-  this.gEntityInfo.init();
   this.gCarousel.init();
-
+  this.gEntityInfo.init(this.gCarousel);
+  
+	
 
   this.gOutputTab.addTab("Visual",this.gbRV);
   this.gOutputTab.addTab("Json",this.gbRR);  
   
   this.gEntityTab.registerOnSelectCallback($.proxy(this.onEntitySelectFromList,this));
   this.gbRV.registerOnSelectCallback($.proxy(this.onEntitySelectFromText,this));
+  this.gbRV.registerOnSaveCallback($.proxy(this.onAnotationSave,this));
   this.gEntityTab.registerOnColorChangeCallback($.proxy(this.saveColor,this));
+  
+  this.gColorManager.registerOnColorChangeCallback($.proxy(this.saveColor,this));
 
   this.gInput.addAnnotateCallback($.proxy(this.onAnnotate,this));
   this.gKBManager.registerOnChangeCallback($.proxy(this.onKbChange,this));
   
   this.item_list = null;
   this.kb_data = null;
+  this.raw_data = null;
   this.c_picker_element= null;
   this.selected_element = null;
   //localStorage.removeItem("colors");
@@ -52,6 +67,7 @@ function GUICore(){
 	  this.colors = {"a":"#00CC00","p":"#00CC00","l":"#667cff","w":"#ff9e00","c":"#ff5ce1",
 				   "e":"#b0bfd2","f":"#9666ff","d":"#ffd792","m":"#bf0000",
 				   "g":"#9e90a3","n":"#669900","s":"#c5e26d","t":"#ffd070"};
+	  localStorage["colors"] = JSON.stringify(this.colors);
   }
   
   //this.gbRV.setColors(this.colors);
@@ -59,7 +75,11 @@ function GUICore(){
   for(var c in this.colors){
   		changecss("."+c,"color",this.colors[c]);
   		changecss("#est_filter-"+c,"background-color",this.colors[c]);
+  		changecss("#clr_filter-"+c,"background-color",this.colors[c]);
   }
+  
+  this.gColorManager.update();
+  
 };
 
 
@@ -68,7 +88,9 @@ GUICore.prototype.onAnnotate = function(){
 	url = this.gAPI.getFormatedURL();
 	data = this.gAPI.getFormatedData();
 	text = this.gInput.getInputText();
-	
+	//text = text.replace(/–/g,"-");
+	//text = text.replace(/“/g,"\"");
+	//text = text.replace(/”/g,"\"");
 	if(url == null || text == null){
 		return false;
 	}
@@ -101,7 +123,7 @@ GUICore.prototype.outputGenerator = function(raw_data){
 		ServerErrorHandler(raw_data["header"]["msg"]);
 		return;
 	}
-	
+	this.raw_data = jQuery.extend(true, {}, raw_data);;
 	data = raw_data["result"];
   
     this.gbRR.clear();
@@ -130,7 +152,7 @@ GUICore.prototype.outputGenerator = function(raw_data){
 				this.item_list.push(i);
 			}
 			
-		
+		/*
 			for(var i in fields){
 				if(kb_row[fields[i]] != "" && kb_row[fields[i]] != undefined){
 					haveTextCol = true;
@@ -142,7 +164,8 @@ GUICore.prototype.outputGenerator = function(raw_data){
 				item.kb_row["hidden text"] = iitems[0][2];
 				//console.log(item.kb_row);
 			}
-			
+			*/
+			item.kb_row["hidden text"] = iitems[0][2];
 			this.kb_data[kbID] = item.kb_row;
 			
 		}else if (item.hasOwnProperty("dates")){
@@ -181,6 +204,20 @@ GUICore.prototype.outputGenerator = function(raw_data){
 	$('#myTab a[href="#output"]').tab('show');
 	
 	this.gEntityTab.update(raw_data["header"]["groups"], this.kb_data);
+	this.gEntityInfo.setColumnExtension(raw_data["header"]["groups_ext"]);
+	
+	var self = this;
+	$("#preVisual").click(
+	function(event){
+  		$(".sel").each(function(){
+	    	$(this).removeClass("sel");
+		});
+		 self.gEntityInfo.clear();
+		 self.gCarousel.clear();
+  	});
+  	
+  	
+  	
 	
 };
 
@@ -190,10 +227,11 @@ GUICore.prototype.onEntitySelectFromText = function(event){
 
 	var element = event.target;
 	var group_id = $(element).attr("class").split(/\s+/)[1];
+	var isCoref = $(element).attr("class").indexOf("coref") > 0 ? true : false ;
 	
 	this.gEntityTab.focusEntity(group_id);
 	
-	this.onEntitySelect(group_id);
+	this.onEntitySelect(group_id, isCoref);
 	
 	if(event.ctrlKey){
 		//alert($(element).text());
@@ -204,6 +242,7 @@ GUICore.prototype.onEntitySelectFromText = function(event){
 		$(element).on("changeColor",$.proxy(this.onUpdateColor,this));
 		
 	}
+	event.stopPropagation();
 	
 	
 };
@@ -212,7 +251,7 @@ GUICore.prototype.onEntitySelectFromList = function(event){
 	var element = event.target;
 	var group_id = $(element).attr("class").split(/\s+/)[0];;
 	this.gbRV.focusEntity(group_id);
-	this.onEntitySelect(group_id);
+	this.onEntitySelect(group_id, false);
 	
 };
 
@@ -239,15 +278,21 @@ GUICore.prototype.onUpdateColor = function(ev){
 
 GUICore.prototype.saveColor = function(group_id, color){
 		//alert([group_id,color]);
-		this.colors[group_id] = color;
-		localStorage["colors"] = JSON.stringify(this.colors);
-		console.log([group_id, color]);
-		changecss("."+group_id,"color",color);
-		changecss("#est_filter-"+group_id,"background-color",color);
-	
+		if(color != null){
+			this.colors[group_id] = color;
+			localStorage["colors"] = JSON.stringify(this.colors);
+			console.log([group_id, color]);
+			changecss("."+group_id,"color",color);
+			changecss("#est_filter-"+group_id,"background-color",color);
+			changecss("#clr_filter-"+group_id,"background-color",color);
+		}else{
+			delete this.colors[group_id];
+			localStorage["colors"] = JSON.stringify(this.colors);
+		}
+		this.gColorManager.update();
 };
 
-GUICore.prototype.onEntitySelect = function(group_id){
+GUICore.prototype.onEntitySelect = function(group_id, isCoref){
 	$(".sel").each(function(){
 	  $(this).removeClass("sel");
 	  
@@ -257,10 +302,48 @@ GUICore.prototype.onEntitySelect = function(group_id){
 		$(this).addClass("sel");
 	})	;
 	
-	this.gEntityInfo.update(this.kb_data[group_id]);
-	this.gCarousel.update(this.kb_data[group_id]);
+	this.gEntityInfo.update(this.kb_data[group_id], isCoref);
+	//this.gCarousel.update(this.kb_data[group_id]);
 };
 
+GUICore.prototype.onAnotationSave = function(){
+
+	var changeList = this.gEntityInfo.getChanges();
+	var output = {};
+	output["header"] = this.raw_data["header"];
+	var data = this.raw_data["result"];
+	var result = [];
+	
+	for(var i in data){
+		
+		var item = data[i];
+		var kb_row;
+		var output_item = {};
+		if(item.hasOwnProperty("kb_row")){
+			if(Array.isArray(item.kb_row)){
+				kb_row = item.kb_row[0];
+				kbID = kb_row.id.replace(":","-");
+				if(changeList.hasOwnProperty(kbID)){
+					kb_row = item.kb_row[changeList[kbID]];
+				}
+				output_item["kb_row"] = kb_row;
+				output_item["items"] = item["items"];
+				result.push(output_item);
+			}else{
+				result.push(item);
+			}
+		}else if (item.hasOwnProperty("dates")){
+			result.push(item);
+		}else if (item.hasOwnProperty("intervals")){ 
+			result.push(item);
+		}else{continue;}
+	}
+	output["result"] = result;
+	var blob = new Blob([JSON.stringify(output, null, "  ")], {type: "text/plain;charset=utf-8"});
+	saveAs(blob, "AnnotatedOutput.json");
+
+	
+};
 
 function AjaxErrorHandler(xhr, status, error){
 	var errorMessage;

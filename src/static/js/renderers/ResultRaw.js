@@ -33,4 +33,6 @@ ResultRaw.prototype.update = function(data){
 };
 
 
-
+ResultRaw.prototype.getText = function(data){
+	return this.mc.val();
+};

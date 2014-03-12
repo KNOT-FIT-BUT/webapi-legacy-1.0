@@ -10,9 +10,18 @@ function EntityInfo(cnt_id){
 	this.kb_row_pos = 0;
 	this.kb_toggle_btn =$(document.createElement("button")).addClass("btn dropdown-toggle").attr("data-toggle","dropdown").text("0/0"); 
 	this.kb_toggle_menu = $(document.createElement("ul")).addClass("dropdown-menu");
+	this.carousel = new function(){};
+	this.column_ext = null;
+	this.kb_row_select = {};
+	this.kb_row_select_id = null;
+	this.isCoref = false;
 };
 
-EntityInfo.prototype.init = function(){
+EntityInfo.prototype.init = function(carousel){
+	if(carousel != undefined){
+		this.carousel = carousel;	
+	}
+	
 	this.group_btn = $(document.createElement("div")).addClass("btn-group").append(
 		$(document.createElement("button")).addClass("btn").text("<").click($.proxy(this.listPrev, this)),
 		this.kb_toggle_btn,
@@ -39,6 +48,13 @@ EntityInfo.prototype.clear = function(){
 	this.group_btn.hide();
 };
 
+EntityInfo.prototype.setColumnExtension = function(ext){
+	if(ext != null && ext!= undefined){
+		this.column_ext = ext;
+	}else{
+		this.column_ext = null;
+	};
+};
 
 EntityInfo.prototype.listNext = function(){
 	//console.log((this.kb_row_pos -1) % this.kb_row.length);
@@ -66,15 +82,25 @@ EntityInfo.prototype.listSelect = function(event){
 	this.group_btn.show();
 };
 
-EntityInfo.prototype.update = function(kb_item){
+EntityInfo.prototype.getChanges = function(){
+	return this.kb_row_select;
+};
+
+EntityInfo.prototype.update = function(kb_item, isCoref){
 	this.clear();
+	this.isCoref = isCoref;
 	//console.log(kb_item);
 	this.group_btn.hide();
 	if(Array.isArray(kb_item)){
-		console.log(this.kb_row_pos);
 		this.kb_row = kb_item;
 		this.kb_row_pos = 0;
-		this.kb_toggle_btn.text("1/"+this.kb_row.length);
+		this.kb_row_select_id = String(this.kb_row[0]["id"].replace(":","-"));
+
+		if(this.kb_row_select.hasOwnProperty(this.kb_row_select_id)){
+			this.kb_row_pos = this.kb_row_select[this.kb_row_select_id];
+		}
+		
+		this.kb_toggle_btn.text((this.kb_row_pos+1)+"/"+this.kb_row.length);
 		this.kb_toggle_menu.empty();
 		for(var i in kb_item){
 			var txt = this.getBestTextField(kb_item[i]);
@@ -89,7 +115,9 @@ EntityInfo.prototype.update = function(kb_item){
 		this._update(this.kb_row[this.kb_row_pos]);
 		this.group_btn.show();
 	}else{
+		this.kb_row_select_id = null;
 		this._update(kb_item);
+		
 	}
 };
 
@@ -114,10 +142,41 @@ EntityInfo.prototype.getBestTextField = function(kb_item){
 EntityInfo.prototype._update = function(kb_row){
 	this.clear();
 	var data="";
+	var prefix = null;
+	var ext = null;
+	if(this.column_ext != null){
+		prefix = kb_row["id"].split(":")[0];
+		if(this.column_ext.hasOwnProperty(prefix)){
+			ext = this.column_ext[prefix];
+			
+		}
+	}
+	
+	if(this.kb_row_select_id != null){
+		this.kb_row_select[this.kb_row_select_id] = this.kb_row_pos;
+	}
+
+	//this.carousel.update(kb_row);
 	for(var i in kb_row){
 		liitem = $(document.createElement('li'));
-		if(kb_row[i] == "" || i.endsWith("escaped") || i == "hidden text"){
+		if(kb_row[i] == "" || i.endsWith("escaped") || i == "hidden text" || i == "hidden rows"){
 			continue;
+		}else if(ext != null && ext.hasOwnProperty(i)){
+			var data = (ext[i]["data"] == '') ? kb_row[i] : ext[i]["data"]+kb_row[i];
+	
+			if(ext[i]["type"] == "url"){
+				liitem.append($(document.createElement('b')).text(i + ": "));
+				liitem.append($(document.createElement('a')).attr('href',data).text(kb_row[i]));
+
+			}else if(ext[i]["type"] == "image"){
+				liitem.append($(document.createElement('b')).text(i + ": "));
+				liitem.append(kb_row[i].join(", "));
+				this.carousel.addImages(kb_row[i], ext[i]["data"]);
+			}
+		}else if(i == "type"){
+			liitem.append($(document.createElement('b')).text(i + ": "));
+			var text = (this.isCoref == true) ? kb_row[i]+(" (coref)") :  kb_row[i];
+			liitem.append(text);
 		}else if(i.endsWith("url")){
 			liitem.append($(document.createElement('b')).text(i + ": "));
 			liitem.append($(document.createElement('a')).attr('href',kb_row[i]).text(kb_row[i]));
@@ -130,7 +189,7 @@ EntityInfo.prototype._update = function(kb_row){
 		}else if(i == "geonames id"){
 			liitem.append($(document.createElement('b')).text(i + ": "));
 			liitem.append($(document.createElement('a')).attr('href','http://www.geonames.org/'+kb_row[i]).text(kb_row[i]));
-		
+
 		}else if(i == "feature code"){
 			liitem.append($(document.createElement('b')).text(i + ": "));		
 			liitem.append(kb_row[i][1]+ " ("+ kb_row[i][0]+ ")");	
@@ -163,6 +222,7 @@ EntityInfo.prototype._update = function(kb_row){
 			}
 			liitem.append($(document.createElement('b')).text(i + ": "));
 			//liitem.append(i + ": " + data);
+			
 			d = data.replace(/\\n/g, '<br />');
 			d = d.replace(/_/g, ' ');
 			var r = /\\u([\d\w]{4})/gi;

@@ -44,6 +44,7 @@ class ProcesssorManager(object):
             include_all_senses = True
         else:
             result = self.__NERrecognizer(text, kb)
+            include_all_senses = True
         
         return self.bake_output(result, kb,include_all_senses)
             
@@ -84,7 +85,8 @@ class ProcesssorManager(object):
         return {"header":{"status":0,
                             "msg":"",
                             "processor":"",
-                            "groups": dict(kb.columns["prefix_desc"].items() + self.__column_enh.items()) if kb.columns["prefix_desc"] is not None else None
+                            "groups": dict(kb.columns["prefix_desc"].items() + self.__column_enh.items()) if kb.columns["prefix_desc"] is not None else None,
+                            "groups_ext": kb.columns["columns_ext"] if ("columns_ext" in kb.columns and kb.columns["columns_ext"] is not None) else None
                           },
                 "result":result_kb
                 }
@@ -131,6 +133,7 @@ class ProcesssorManager(object):
         output = fsa.recognize(text)
         entities = []
         for line in output.split("\n")[:-1]:
+            print line
             se = SimpleEntity(line,kb)
             if se.preferred_sense is not None:
                 entities.append(se)
@@ -143,6 +146,10 @@ class ProcesssorManager(object):
                 if ent.mutual_position(new_entities[-1].begin,
                                        new_entities[-1].end) != 0:
                     new_entities.append(ent)
+                    #print "Accepted ", ent.source
+                else:
+                    pass
+                    #print "Dumped ", ent.source
             
             entities = new_entities
         
@@ -166,9 +173,13 @@ class ProcesssorManager(object):
             else:
                 if item.preferred_sense:
                     item_id = item.preferred_sense
-                    item_data = [item.begin, item.end, item.source]
+                    item_data = [item.begin, item.end, item.source, item.is_coreference()]
                     if include_all_senses:
-                        item_data.append(item.senses)
+                        senses = list(item.senses)
+                        if item.preferred_sense in senses:
+                            senses.remove(item.preferred_sense)
+                            senses.insert(0,item.preferred_sense)
+                        item_data.append(senses)
                 else:
                     continue
                 
@@ -228,6 +239,9 @@ class SimpleEntity():
             return 1
         else:
             return 0
+        
+    def is_coreference(self):
+        return False
 
 
 

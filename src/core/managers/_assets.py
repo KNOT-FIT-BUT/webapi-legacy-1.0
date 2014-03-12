@@ -95,7 +95,10 @@ class AssetsManager(Thread):
         
         if kb is not None:
             kb.setConf(conf["conf"])
-            kb.setColumns(conf["columns"])
+            columns = conf["columns"] if "columns" in conf else {}
+            if "columns" in conf and "external_file" in conf["columns"]:
+                columns = self.loadColumsFromFile(self.__getPath(conf["columns"]["external_file"]))
+            kb.setColumns(columns)
         return kb
         
     
@@ -218,3 +221,47 @@ class AssetsManager(Thread):
                 self.loadKB(kb_name);
     
     
+    def loadColumsFromFile(self, filename):
+        column_ext_def = {"g":{"type":"image"},
+                          "u":{"type":"url"}
+                          }
+        
+        columns = {}
+        columns_ext = {}
+        prefix_desc = {}
+        with open(filename,'r') as f:
+            raw_colums = f.read().strip()
+            
+        for row in raw_colums.split("\n"):
+            column = []
+            row_split = row.split("\t")
+            row_head = row_split.pop(0)
+            row_prefix, row_head, row_id = row_head.split(":")
+            prefix_desc[row_prefix] = row_head.lower()
+            column.append(row_id.lower())
+            for col_name in row_split:
+                prefix = ""
+                url = ""
+                if ':' in col_name:
+                    col_split = col_name.split(":")
+                    prefix = ":".join(col_split[:-1])
+                    if "[" in prefix:
+                        prefix,url = prefix.split("[")
+                    col_name = col_split[-1]
+                    for k in prefix:
+                        if k in column_ext_def:
+                            if row_prefix not in columns_ext:
+                                columns_ext[row_prefix] = {}
+                            columns_ext[row_prefix][col_name.lower()] = {"type":column_ext_def[k]["type"],
+                                                                         "data":url[:-1]
+                                                                         }
+                    if "m" in prefix:
+                        col_name = "*" + col_name
+                column.append(col_name.lower())
+            columns[row_prefix] = column  
+        columns["prefix_desc"] = prefix_desc
+        columns["columns_ext"] = columns_ext
+        return columns
+        
+        
+        
